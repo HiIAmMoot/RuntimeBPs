@@ -84,3 +84,4 @@ Multithreading: https://michaeljcole.github.io/wiki.unrealengine.com/Multi-Threa
 
 Wildcard structs: https://forums.unrealengine.com/community/community-content-tools-and-tutorials/27351-tutorial-how-to-accept-wildcard-structs-in-your-ufunctions
 
+Barlow font: https://fonts.google.com/specimen/Barlow
