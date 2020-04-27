@@ -7,8 +7,13 @@ I've tried to replicate UE4's Blueprint editor as close as possible for the end 
 Internally, each node is an UObject which contains its runtime data. Think of things like how many pins the node has, what pin is connected to what pin, and what the default value for each input pin is. These nodes then communicate and can be triggered by a starting node like Begin Play. When using multithreading, all execution is ran on one background thread, with the exception of code that is required to be run on the GameThread, like spawning an actor.
 
 ## Examples
-https://www.youtube.com/watch?v=JL6fOXXktd4
-https://www.youtube.com/watch?v=1zpZ1pBPDS0
+**Mass spawning**
+
+[![Mass spawning](https://img.youtube.com/vi/JL6fOXXktd4/0.jpg)](https://www.youtube.com/watch?v=JL6fOXXktd4)
+
+**Grenade teleports**
+
+[![Grenade teleports](https://img.youtube.com/vi/1zpZ1pBPDS0/0.jpg)](https://www.youtube.com/watch?v=1zpZ1pBPDS0)
 
 ## Features
 - Functions exposed from C++
@@ -73,3 +78,9 @@ A: I'm active in the Unreal Slackers Discord server (https://unrealslackers.org/
 **Q: What is the game in the last example?**
 
 A: That's Contingency, a fan-made Halo game in UE4. I used to work with them so I used the game in that video to make a more practical example. Check them out at https://project-contingency.com/. The grenade teleport script is available in the source.
+
+## Used resources
+Multithreading: https://michaeljcole.github.io/wiki.unrealengine.com/Multi-Threading:_How_to_Create_Threads_in_UE4/
+
+Wildcard structs: https://forums.unrealengine.com/community/community-content-tools-and-tutorials/27351-tutorial-how-to-accept-wildcard-structs-in-your-ufunctions
+
