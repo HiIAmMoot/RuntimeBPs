@@ -7,8 +7,8 @@ I've tried to replicate UE4's Blueprint editor as close as possible for the end 
 Internally, each node is an UObject which contains its runtime data. Think of things like how many pins the node has, what pin is connected to what pin, and what the default value for each input pin is. These nodes then communicate and can be triggered by a starting node like Begin Play. When using multithreading, all execution is ran on one background thread, with the exception of code that is required to be run on the GameThread, like spawning an actor.
 
 ## Examples
-https://www.youtube.com/watch?v=1zpZ1pBPDS0
 https://www.youtube.com/watch?v=JL6fOXXktd4
+https://www.youtube.com/watch?v=1zpZ1pBPDS0
 
 ## Features
 - Functions exposed from C++
@@ -42,26 +42,34 @@ https://www.youtube.com/watch?v=JL6fOXXktd4
 - Check out ExampleNodes.cpp & ExampleNodes.h 
 
 ## Frequently asked questions
-Q: Why isn't this a plugin?
+**Q: Why isn't this a plugin?**
+
 A: I have not made this a plugin because from my experience it is hard for a plugin to communicate with your project source code. I wanted to keep that flexibility in the case of adding a variable type that is defined in your project source and not the engine source.
 
-Q: Can I copy/paste Blueprints I've made in UE4?
+**Q: Can I copy/paste Blueprints I've made in UE4?**
+
 A: No. Not out of the box. UE4 blueprints store a lot more variables per node and some in a different way, one would need to make a conversion script to do so.
 
-Q: How performant is this compared to UE4 blueprints
+**Q: How performant is this compared to UE4 blueprints**
+
 A: I've not tested this extensively, but the added overhead seems to be slightly worse than regular Blueprints. This is one of the reasons I've included multithread support.
 
-Q: Does this work in a networked game?
+**Q: Does this work in a networked game?**
+
 A: The scripts are to be ran on the server only, with the intention that any replicated functions is merely called from the function and the game code does the rest.
 
-Q: Would you recommend using this for any game?
+**Q: Would you recommend using this for any game?**
+
 A: With some pollish, and with the assumption you don't want to use a text-based scripting language, yes.
 
-Q: Why didn't you do it like X or Y?
+**Q: Why didn't you do it like X or Y?**
+
 A: Probably because I didn't know about X or Y, if you have improvements to be made, feel free to fork and make a PR.
 
-Q: How can we contact you for questions and whatnot?
+**Q: How can I contact you for questions and whatnot?**
+
 A: I'm active in the Unreal Slackers Discord server (https://unrealslackers.org/). My tag is Moot#0021.
 
-Q: What is the game in the first example?
+**Q: What is the game in the last example?**
+
 A: That's Contingency, a fan-made Halo game in UE4. I used to work with them so I used the game in that video to make a more practical example. Check them out at https://project-contingency.com/. The grenade teleport script is available in the source.
