@@ -1,16 +1,16 @@
 # RuntimeBPs
 This project allows for visual scripting in UE4 similar to Blueprints, but at runtime. The way this is set up does not make use of any UE4 boilerplate and could with a few adjustments be used in another engine.
 
-# How does it work?
+## How does it work?
 I've tried to replicate UE4's Blueprint editor as close as possible for the end user. So for the end user, it should be very familiar to them if they've used UE4 Blueprints before.
 
 Internally, each node is an UObject which contains its runtime data. Think of things like how many pins the node has, what pin is connected to what pin, and what the default value for each input pin is. These nodes then communicate and can be triggered by a starting node like Begin Play. When using multithreading, all execution is ran on one background thread, with the exception of code that is required to be run on the GameThread, like spawning an actor.
 
-# Examples
+## Examples
 https://www.youtube.com/watch?v=1zpZ1pBPDS0
 https://www.youtube.com/watch?v=JL6fOXXktd4
 
-# Features
+## Features
 - Functions exposed from C++
 	- Latent functions
 	- For Loops
@@ -41,7 +41,7 @@ https://www.youtube.com/watch?v=JL6fOXXktd4
 - Strings are not stored inside the union but are their separate variable, this because strings don't mix well with TUnion.
 - Check out ExampleNodes.cpp & ExampleNodes.h 
 
-# Frequently asked questions
+## Frequently asked questions
 Q: Why isn't this a plugin?
 A: I have not made this a plugin because from my experience it is hard for a plugin to communicate with your project source code. I wanted to keep that flexibility in the case of adding a variable type that is defined in your project source and not the engine source.
 
