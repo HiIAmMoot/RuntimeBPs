@@ -15,7 +15,7 @@ void UJsonSaveGame::SetJsonString(FString NewString)
 bool UJsonSaveGame::SaveTextFile(const FString& FileName)
 {
 	FFileHelper FileHelper = FFileHelper();
-	FString AbsoluteFilePath = FPaths::ProjectSavedDir() + "\\SaveGames\\" + FileName + ".sav"; 
+	FString AbsoluteFilePath = FPaths::ProjectSavedDir() + "\\SaveGames\\" + FileName + ".json"; 
 
 
 	return FileHelper.SaveStringToFile(JsonString, *AbsoluteFilePath);
@@ -24,7 +24,7 @@ bool UJsonSaveGame::SaveTextFile(const FString& FileName)
 bool UJsonSaveGame::LoadTextFile(const FString& FileName)
 {
 	FFileHelper FileHelper = FFileHelper();
-	FString AbsoluteFilePath = FPaths::ProjectSavedDir() + "\\SaveGames\\" + FileName + ".sav";
+	FString AbsoluteFilePath = FPaths::ProjectSavedDir() + "\\SaveGames\\" + FileName + ".json";
 
 	return FileHelper.LoadFileToString(JsonString, *AbsoluteFilePath);
 }
