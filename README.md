@@ -1,6 +1,8 @@
 # RuntimeBPs
 This project allows for visual scripting in UE4 similar to Blueprints, but at runtime. The way this is set up does not make use of any UE4 boilerplate and could with a few adjustments be used in another engine.
 
+Current engine version is 4.22
+
 ## How does it work?
 I've tried to replicate UE4's Blueprint editor as close as possible for the end user. So for the end user, it should be very familiar to them if they've used UE4 Blueprints before.
 
