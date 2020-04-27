@@ -35,22 +35,25 @@ void URuntimeBpLibrary::DrawPolyLine(UPARAM(ref)FPaintContext& Context, int InLa
 	FSlateDrawElement::MakeLines(Context.OutDrawElements, InLayer, Context.AllottedGeometry.ToPaintGeometry(), Points, ESlateDrawEffect::None, InTint, false, InThickness);
 }
 
-TArray<FString> URuntimeBpLibrary::GetAllSaveGameSlotNames(const FString& LocalPath)
+TArray<FString> URuntimeBpLibrary::GetAllSaveGameSlotNames(const FString& LocalPath, const FString& FileExtension)
 {
 	class FFindSavesVisitor : public IPlatformFile::FDirectoryVisitor
 	{
 	public:
 		FFindSavesVisitor() {}
 
+		FString Extension = "sav";
+
 		virtual bool Visit(const TCHAR* (FilenameOrDirectory), bool bIsDirectory)
 		{
 			if (!bIsDirectory)
 			{
 				FString FullFilePath(FilenameOrDirectory);
-				if (FPaths::GetExtension(FullFilePath) == TEXT("sav"))
+				if (FPaths::GetExtension(FullFilePath) == Extension)
 				{
+					FString ExtensionWithDot = "." + Extension;
 					FString CleanFilename = FPaths::GetBaseFilename(FullFilePath);
-					CleanFilename = CleanFilename.Replace(TEXT(".sav"), TEXT(""));
+					CleanFilename = CleanFilename.Replace(*ExtensionWithDot, TEXT(""));
 					SavesFound.Add(CleanFilename);
 				}
 			}
@@ -65,6 +68,7 @@ TArray<FString> URuntimeBpLibrary::GetAllSaveGameSlotNames(const FString& LocalP
 	if (!SavesFolder.IsEmpty())
 	{
 		FFindSavesVisitor Visitor;
+		Visitor.Extension = FileExtension;
 		FPlatformFileManager::Get().GetPlatformFile().IterateDirectory(*SavesFolder, Visitor);
 		Saves = Visitor.SavesFound;
 	}

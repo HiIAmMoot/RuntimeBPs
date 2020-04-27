@@ -61,9 +61,9 @@ public:
 	static void DrawPolyLine(UPARAM(ref) FPaintContext& Context, int InLayer, const FVector2D& InStart, const FVector2D& InEnd, float InThickness, const FLinearColor& InTint);
 
 
-	// returns a list of all save games in /Saved/SaveGames folder, without the .sav extension (filename only)
+	// returns a list of all save games in /Saved/SaveGames folder, without the extension (filename only)
 	UFUNCTION(BlueprintPure, Category = Game)
-	static TArray<FString> GetAllSaveGameSlotNames(const FString& LocalPath);
+	static TArray<FString> GetAllSaveGameSlotNames(const FString& LocalPath, const FString& FileExtension = FString(TEXT("sav")));
 	
 	// returns an array of all child classes of a specified class
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Child Classes of Class", Keywords = "Get Child Classes"), Category = Class)
