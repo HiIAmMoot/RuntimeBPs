@@ -75,7 +75,11 @@ A: Probably because I didn't know about X or Y, if you have improvements to be m
 
 **Q: How can I contact you for questions and whatnot?**
 
-A: I'm active in the Unreal Slackers Discord server (https://unrealslackers.org/). My tag is Moot#0021.
+A: I'm active in the Unreal Slackers Discord server (https://unrealslackers.org/). My tag is Moot#0021. Alternatively, you can ask questions on the UE4 forums. https://forums.unrealengine.com/community/community-content-tools-and-tutorials/1751725-runtime-blueprints-have-your-end-user-write-their-own-blueprint-scripts-to-use-in-your-game
+
+**Q: Is replicating blueprint functionality legal?
+
+A: I've asked this question on the Answerhub a few years ago. I cannot guarantee you that using this is legal but according to the Answerhub there should be no issue: https://answers.unrealengine.com/questions/770458/view.html
 
 **Q: What is the game in the last example?**
 
