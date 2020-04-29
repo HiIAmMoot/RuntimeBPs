@@ -8,7 +8,7 @@ I've tried to replicate UE4's Blueprint editor as close as possible for the end 
 
 Internally, each node is an UObject which contains its runtime data. Think of things like how many pins the node has, what pin is connected to what pin, and what the default value for each input pin is. These nodes then communicate and can be triggered by a starting node like Begin Play. When using multithreading, all execution is ran on one background thread, with the exception of code that is required to be run on the GameThread, like spawning an actor.
 
-## Examples
+## Video Examples
 **Mass spawning**
 
 [![Mass spawning](https://img.youtube.com/vi/JL6fOXXktd4/0.jpg)](https://www.youtube.com/watch?v=JL6fOXXktd4)
