@@ -400,3 +400,48 @@ void USequence::Next()
 		Super::Execute(LastIndex, ReceivedFromLoopIndex);// Loop Body
 	}
 }
+
+UGetAllActorsOfClass::UGetAllActorsOfClass()
+{
+	NodeName = "Get All Actors Of Class";
+	NodeCategory = "Utilities";
+
+	InputPins.SetNum(2);
+	InputPins[0].MakeNodePin();// No args means execute
+
+	InputPins[1].MakeNodePin("Actor Class", EVariableTypes::Class);
+	InputPins[1].Value.Array[0].SetClassArg(); // Default value
+
+	OutputPins.SetNum(2);
+	OutputPins[0].MakeNodePin("Then");
+	OutputPins[1].MakeNodeArray("Out Actors", EVariableTypes::Actor);
+
+}
+
+void UGetAllActorsOfClass::Execute(int Index, int FromLoopIndex)
+{
+	TSubclassOf<AActor> ActorClass = GetConnectedPinValue(InputPins[1]).GetClassArg();
+	if (ActorClass)
+	{
+		if (BPConstructor->GetMultiThread())
+		{
+			// We must execute the actual spawning inside the GameThread, a crash will occur otherwise
+			AsyncTask(ENamedThreads::GameThread, [this, ActorClass, FromLoopIndex]()
+			{
+				UGameplayStatics::GetAllActorsOfClass(this, ActorClass, OutActors);
+				OutputPins[1].Value.SetActorArg(OutActors);
+				URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, FromLoopIndex, FunctionIndex);
+			});
+		}
+		else
+		{
+			UGameplayStatics::GetAllActorsOfClass(this, GetConnectedPinValue(InputPins[1]).GetClassArg(), OutActors);
+			OutputPins[1].Value.SetActorArg(OutActors);
+			Super::Execute(0, FromLoopIndex);// Index here is the output pins array index
+		}
+	}
+	else
+	{
+		Super::Execute(0, FromLoopIndex);// 0 here is the output pins array index
+	}
+}

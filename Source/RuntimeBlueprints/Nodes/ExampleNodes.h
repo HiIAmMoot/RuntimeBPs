@@ -162,3 +162,21 @@ public:
 	virtual void Next() override;
 
 };
+
+/**
+ *
+ */
+UCLASS()
+class RUNTIMEBLUEPRINTS_API UGetAllActorsOfClass : public URuntimeBpObject
+{
+	GENERATED_BODY()
+
+public:
+
+	TArray<AActor*> OutActors;
+
+	UGetAllActorsOfClass();
+
+	virtual void Execute(int Index, int FromLoopIndex = -1) override;
+
+};
