@@ -364,14 +364,6 @@ USequence::USequence()
 	OutputPins[1].MakeNodePin("Then 1");
 
 }
-/*
-void USequence::Execute(int Index, int FromLoopIndex)
-{
-	for (int i = 0; i < OutputPins.Num(); i++)
-	{
-		Super::Execute(i, FromLoopIndex);
-	}
-}*/
 
 void USequence::Execute(int Index, int FromLoopIndex)
 {
@@ -399,6 +391,39 @@ void USequence::Next()
 	{
 		Super::Execute(LastIndex, ReceivedFromLoopIndex);// Loop Body
 	}
+}
+
+UMakeArray::UMakeArray()
+{
+	NodeName = "Make Array";
+	NodeDescription = "Creates a new array from a series of items.";
+	NodeCategory = "Utilities|Array";
+
+	DynamicInput = true;
+	Pure = true;
+
+	InputPins.SetNum(2);
+	InputPins[0].MakeNodePin("[0]", EVariableTypes::WildCard);
+	InputPins[1].MakeNodePin("[1]", EVariableTypes::WildCard);
+
+	OutputPins.SetNum(1);
+	OutputPins[0].MakeNodeArray("Array", EVariableTypes::WildCard);
+
+}
+
+void UMakeArray::Execute(int Index, int FromLoopIndex)
+{
+	TArray<FNodeVarArgs> Array;
+	Array.Reserve(InputPins.Num());
+
+	for (FPinStruct& InputPin : InputPins)
+	{
+		Array.Add(GetConnectedPinValue(InputPin));
+	}
+
+	OutputPins[0].Value.Array = Array;
+
+	Super::Execute(0, FromLoopIndex);// On Completed
 }
 
 UGetAllActorsOfClass::UGetAllActorsOfClass()
