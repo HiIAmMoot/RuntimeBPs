@@ -400,7 +400,6 @@ UMakeArray::UMakeArray()
 	NodeCategory = "Utilities|Array";
 
 	DynamicInput = true;
-	Pure = true;
 
 	InputPins.SetNum(2);
 	InputPins[0].MakeNodePin("[0]", EVariableTypes::WildCard);
