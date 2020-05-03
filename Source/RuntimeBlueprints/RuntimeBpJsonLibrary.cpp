@@ -368,7 +368,20 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 					}
 					default:
 					{
-						InputPin.VariableType = DefaultObject->InputPins[UsedIndex].VariableType;
+						// Wildcards have their used variable type stored in the pin index, however only when the pin isn't connected (node index = -1)
+						// The index stored in the pin index is the enum index from EVariableTypes
+						// We use PinIndex instead of UsedIndex here because we're not dealing with DefaultObject
+						if (SaveableNodes[NodeIndex].i[PinIndex].p > -1 && SaveableNodes[NodeIndex].i[PinIndex].n == -1)
+						{
+							EVariableTypes WildCardType = static_cast<EVariableTypes>(SaveableNodes[NodeIndex].i[PinIndex].p);
+							InputPin.VariableType = WildCardType;
+							SaveableNodes[NodeIndex].i[PinIndex].p = -1;
+							InputPin.ConnectedPinIndex = -1;
+						}
+						else
+						{
+							InputPin.VariableType = DefaultObject->InputPins[UsedIndex].VariableType;
+						}
 						break;
 					}
 				}
