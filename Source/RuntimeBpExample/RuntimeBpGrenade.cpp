@@ -31,7 +31,7 @@ void ARuntimeBpGrenade::PullPin()
 	{
 		GrenadeScript = NewObject<UGrenadeScript>(this);
 		GrenadeScript->RegisterComponent();
-		GrenadeScript->InitScript(ScriptPath);
+		GrenadeScript->InitScriptFromSave(ScriptPath);
 		Grenade_OnStartExplosion.AddDynamic(GrenadeScript, &UGrenadeScript::CallGrenadeExplosion);
 	}
 

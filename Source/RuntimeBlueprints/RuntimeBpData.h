@@ -80,10 +80,6 @@ enum class EVariableTypes : uint8
 	WildCard 				UMETA(DisplayName = "WildCard")
 };
 
-
-
-
-
 // This stuct is used to have a dynamic variable depending on the Enum above this
 USTRUCT(BlueprintType)
 struct FNodeVarArgs

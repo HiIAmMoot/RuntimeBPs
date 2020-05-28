@@ -196,3 +196,19 @@ public:
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 
 };
+
+/**
+ *
+ */
+UCLASS()
+class RUNTIMEBLUEPRINTS_API UActorHasScript : public URuntimeBpObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UActorHasScript();
+
+	virtual void Execute(int Index, int FromLoopIndex = -1) override;
+
+};

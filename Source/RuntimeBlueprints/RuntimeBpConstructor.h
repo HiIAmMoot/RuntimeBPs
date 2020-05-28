@@ -171,6 +171,10 @@ public:
 	static FMultiThreadScript* Thread;
 
 	// All BP Nodes
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Nodes", Keywords = "Constructor class Json File"))
+	FString JsonFile;
+
+	// All BP Nodes
 	UPROPERTY()
 	TArray<URuntimeBpObject*> BPNodes;
 
@@ -203,13 +207,14 @@ public:
 
 	FORCEINLINE bool GetMultiThread() const { return EnableMultithread; }
 
-	void InitScript(UPARAM(ref) TArray<FNodeStruct>& InNodes, UPARAM(ref) TArray<FSaveableVariable>& InVariables, UPARAM(ref) TArray<FRuntimeFunction>& InFunctions, bool Multithread = true);
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Init Script"))
+	void InitScript(const FString& ScriptName, UPARAM(ref) TArray<FNodeStruct>& InNodes, UPARAM(ref) TArray<FSaveableVariable>& InVariables, UPARAM(ref) TArray<FRuntimeFunction>& InFunctions, bool Multithread = true);
 
-	void InitScript(const FString& ScriptName, bool Multithread = true);
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Init Script from Save"))
+	void InitScriptFromSave(const FString& ScriptName, bool Multithread = true);
 
 	void ContinueExecute(URuntimeBpConstructor* RuntimeBPConstructor, int NodeIndex, int ExecuteIndex, int FromLoopIndex, int FunctionIndex);
 
-	UFUNCTION(BlueprintCallable)
 	void ConstructBPNodes(UPARAM(ref) TArray<FNodeStruct>& Nodes, bool Multithread);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Clear Node Structs"))
