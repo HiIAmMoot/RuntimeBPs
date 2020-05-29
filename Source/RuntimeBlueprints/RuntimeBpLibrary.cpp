@@ -400,6 +400,16 @@ void URuntimeBpLibrary::SetSceneComponentArg(UPARAM(ref) TArray<FNodeVarArgs>& V
 	NODE_VAR_ARG_SETTER_SAFE(USceneComponent*, SceneComponent)
 }
 
+TArray<UPrimitiveComponent*> URuntimeBpLibrary::GetPrimitiveComponentArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)
+{
+	NODE_VAR_ARG_GETTER_SAFE(UPrimitiveComponent*, PrimitiveComponent)
+}
+
+void URuntimeBpLibrary::SetPrimitiveComponentArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<UPrimitiveComponent*> Value)
+{
+	NODE_VAR_ARG_SETTER_SAFE(UPrimitiveComponent*, PrimitiveComponent)
+}
+
 TArray<APlayerController*> URuntimeBpLibrary::GetPlayerControllerArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)
 {
 	NODE_VAR_ARG_GETTER_SAFE(APlayerController*, PlayerController)
@@ -418,6 +428,16 @@ TArray<ACharacter*> URuntimeBpLibrary::GetCharacterArg(UPARAM(ref) TArray<FNodeV
 void URuntimeBpLibrary::SetCharacterArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<ACharacter*> Value)
 {
 	NODE_VAR_ARG_SETTER_SAFE(ACharacter*, Character)
+}
+
+TArray<APawn*> URuntimeBpLibrary::GetPawnArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)
+{
+	NODE_VAR_ARG_GETTER_SAFE(APawn*, Pawn)
+}
+
+void URuntimeBpLibrary::SetPawnArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<APawn*> Value)
+{
+	NODE_VAR_ARG_SETTER_SAFE(APawn*, Pawn)
 }
 
 TArray<UStaticMeshComponent*> URuntimeBpLibrary::GetStaticMeshComponentArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)

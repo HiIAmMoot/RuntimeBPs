@@ -237,6 +237,14 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints|Set", Keywords = "Set Node Var Args Scene Component"))
 	static void SetSceneComponentArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<USceneComponent*> Value);
 
+	// Gets the variable in the form of an UPrimitiveComponent
+	UFUNCTION(BlueprintPure, meta = (Category = "Runtime Blueprints|Get", Keywords = "Get Node Var Args Primitive Component"))
+	static TArray<UPrimitiveComponent*> GetPrimitiveComponentArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array = false);
+
+	// Sets the variable in the form of an UPrimitiveComponent
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints|Set", Keywords = "Set Node Var Args Primitive Component"))
+	static void SetPrimitiveComponentArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<UPrimitiveComponent*> Value);
+
 	// Gets the variable in the form of an APlayerController
 	UFUNCTION(BlueprintPure, meta = (Category = "Runtime Blueprints|Get", Keywords = "Get Node Var Args Player Controller"))
 	static TArray<APlayerController*> GetPlayerControllerArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array = false);
@@ -252,6 +260,14 @@ public:
 	// Sets the variable in the form of an ACharacter
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints|Set", Keywords = "Set Node Var Args Character"))
 	static void SetCharacterArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<ACharacter*> Value);
+
+	// Gets the variable in the form of an APawn
+	UFUNCTION(BlueprintPure, meta = (Category = "Runtime Blueprints|Get", Keywords = "Get Node Var Args Pawn"))
+	static TArray<APawn*> GetPawnArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array = false);
+
+	// Sets the variable in the form of an APawn
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints|Set", Keywords = "Set Node Var Args Pawn"))
+	static void SetPawnArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<APawn*> Value);
 
 	// Gets the variable in the form of an UStaticMeshComponent
 	UFUNCTION(BlueprintPure, meta = (Category = "Runtime Blueprints|Get", Keywords = "Get Node Var Args Static Mesh Component"))
@@ -332,7 +348,6 @@ public:
 	UFUNCTION(BlueprintPure, meta = (Category = "Runtime Blueprints", Keywords = "Get Connected Pin Value", DisplayName = "Get Value From Connected Pin"))
 	static FPinStruct GetConnectedPinValue(FPinStruct Pin, class URuntimeBpConstructor* BPConstructor);
 
-
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints", Keywords = "Pin value index"))
 	static int GetValueSubtypeIndex(UPARAM(ref) TArray<FNodeVarArgs>& Values);
 
@@ -344,9 +359,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints", Keywords = "Variable Value to Pin"))
 	static bool VariableValueToPinValue(UPARAM(ref) FSaveableVariable& Variable, UPARAM(ref) FPinStruct& Pin);
-
-	// UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject", Category = "Runtime Blueprints|Loading", Keywords = "Convert Saveable Value to Union Value"))
-	// Static void ConvertSaveableValueToUnionValue(UObject* WorldContextObject, UPARAM(ref) FSaveableProperty& SaveableValue, EVariableTypes VariableType, TArray<FNodeVarArgs>& UnionValue);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints|Saving", Keywords = "Convert Saveable Value to Json"))
 	static FString SaveableValueToJson(FSaveableProperty SaveableValue, EVariableTypes VariableType, int Indent, bool PrettyPrint);
