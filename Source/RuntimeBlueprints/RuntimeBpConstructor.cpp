@@ -116,6 +116,11 @@ void URuntimeBpConstructor::InitScript(const FString& ScriptName, UPARAM(ref)TAr
 	Functions = InFunctions;
 
 	ConstructBPNodes(NodeStructs, Multithread);
+
+	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &URuntimeBpConstructor::CallOnTakeAnyDamage);
+	GetOwner()->OnActorBeginOverlap.AddDynamic(this, &URuntimeBpConstructor::CallOnActorBeginOverlap);
+	GetOwner()->OnActorEndOverlap.AddDynamic(this, &URuntimeBpConstructor::CallOnActorEndOverlap);
+	GetOwner()->OnActorHit.AddDynamic(this, &URuntimeBpConstructor::CallOnActorHit);
 }
 
 void URuntimeBpConstructor::InitScriptFromSave(const FString& ScriptName, bool Multithread)
@@ -130,11 +135,7 @@ void URuntimeBpConstructor::InitScriptFromSave(const FString& ScriptName, bool M
 
 			if (URuntimeBpJsonLibrary::JsonStringToScript(SaveGame->GetJsonString(), RuntimeBpJson))
 			{
-				JsonFile = ScriptName;
-				NodeStructs = RuntimeBpJson.Nodes;
-				Variables = RuntimeBpJson.Variables;
-				Functions = RuntimeBpJson.Functions;
-				ConstructBPNodes(NodeStructs, Multithread);
+				InitScript(ScriptName, RuntimeBpJson.Nodes, RuntimeBpJson.Variables, RuntimeBpJson.Functions, Multithread);
 			}
 		}
 	}
@@ -212,7 +213,7 @@ void URuntimeBpConstructor::ConstructBPNodes(UPARAM(ref) TArray<FNodeStruct>& No
 	else
 	{
 		// Call begin play once nodes are spawned
-		CallBeginPlay();
+		CallOnBeginPlay();
 	}
 }	
 
@@ -226,6 +227,8 @@ void URuntimeBpConstructor::ClearVariables()
 }
 void URuntimeBpConstructor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	CallOnEndPlay(EndPlayReason);
+
 	Kill = true;
 
 	for (URuntimeBpObject* Node : BPNodes)
@@ -267,61 +270,112 @@ float URuntimeBpConstructor::GetWorldDeltaSeconds()
 	return UGameplayStatics::GetWorldDeltaSeconds(this);
 }
 
-void URuntimeBpConstructor::CallBeginPlay()
-{ 
-	if (BeginPlayNode != nullptr)
+void URuntimeBpConstructor::CallOnBeginPlay()
+{
+	// The multithread version of this call is done with the init of the thread
+	if (BeginPlayNode)
 	{
 		BeginPlayNode->Execute(0);
 	}
 }
 
-void URuntimeBpConstructor::CallEndPlay()
+void URuntimeBpConstructor::CallOnEndPlay(EEndPlayReason::Type EndPlayReason)
 {
-	if (EndPlayNode != nullptr)
+	if (EndPlayNode)
 	{
-		EndPlayNode->Execute(0);
+		// Set the parameters that are passed with this call
+		EndPlayNode->OutputPins[1].Value.Array[0].SetByteArg(EndPlayReason);
+		//EndPlayNode->OutputPins[1].Meta = "EEndPlayReason"; // Enum data
+
+		if (EnableMultithread)
+		{
+			ContinueExecute(this, EndPlayNode->NodeIndex, 0, -1, EndPlayNode->FunctionIndex);
+		}
+		else
+		{
+			EndPlayNode->Execute(0);
+		}
 	}
 }
 
-void URuntimeBpConstructor::CallTick(float DeltaSeconds)
+void URuntimeBpConstructor::CallOnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* DamageInstigator, AActor* DamageCauser)
 {
+	if (TakeAnyDamageNode)
+	{
+		// Set the parameters that are passed with this call
+		TakeAnyDamageNode->OutputPins[1].Value.Array[0].SetActorArg(DamagedActor);
+		TakeAnyDamageNode->OutputPins[2].Value.Array[0].SetFloatArg(Damage);
+		TakeAnyDamageNode->OutputPins[5].Value.Array[0].SetActorArg(DamageCauser);
 
+		if (DamageInstigator)
+		{
+			APlayerController* PlayerController = Cast<APlayerController>(DamageInstigator);
+			TakeAnyDamageNode->OutputPins[4].Value.Array[0].SetPlayerControllerArg(PlayerController);
+		}
+
+		if (DamageType)
+		{
+			UDamageType* LocalDamageType = const_cast<UDamageType*>(DamageType);
+			if (LocalDamageType)
+			{
+				TakeAnyDamageNode->OutputPins[3].Value.Array[0].SetDamageTypeArg(LocalDamageType);
+			}
+		}
+
+		if (EnableMultithread)
+		{
+			ContinueExecute(this, TakeAnyDamageNode->NodeIndex, 0, -1, TakeAnyDamageNode->FunctionIndex);
+		}
+		else
+		{
+			TakeAnyDamageNode->Execute(0);
+		}
+	}
 }
 
-void URuntimeBpConstructor::CallOnActorBeginOverlap(AActor * OtherActor)
+void URuntimeBpConstructor::CallOnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
+	ActorBeginOverlapNode->OutputPins[1].Value.Array[0].SetActorArg(OverlappedActor);
+	ActorBeginOverlapNode->OutputPins[2].Value.Array[0].SetActorArg(OtherActor);
 
+	if (EnableMultithread)
+	{
+		ContinueExecute(this, ActorBeginOverlapNode->NodeIndex, 0, -1, ActorBeginOverlapNode->FunctionIndex);
+	}
+	else
+	{
+		ActorBeginOverlapNode->Execute(0);
+	}
 }
 
-void URuntimeBpConstructor::CallOnActorEndOverlap(AActor * OtherActor)
+void URuntimeBpConstructor::CallOnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
+	ActorEndOverlapNode->OutputPins[1].Value.Array[0].SetActorArg(OverlappedActor);
+	ActorEndOverlapNode->OutputPins[2].Value.Array[0].SetActorArg(OtherActor);
+
+	if (EnableMultithread)
+	{
+		ContinueExecute(this, ActorEndOverlapNode->NodeIndex, 0, -1, ActorEndOverlapNode->FunctionIndex);
+	}
+	else
+	{
+		ActorEndOverlapNode->Execute(0);
+	}
 }
 
-void URuntimeBpConstructor::CallOnComponentBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+void URuntimeBpConstructor::CallOnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
 {
+	ActorHitNode->OutputPins[1].Value.Array[0].SetActorArg(SelfActor);
+	ActorHitNode->OutputPins[2].Value.Array[0].SetActorArg(OtherActor);
+	ActorHitNode->OutputPins[3].Value.Array[0].SetVectorArg(NormalImpulse);
+	ActorHitNode->OutputPins[4].Value.Array[0].SetHitResultArg(Hit);
 
-}
-
-void URuntimeBpConstructor::CallOnComponentEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int OtherBodyIndex)
-{
-
-}
-
-void URuntimeBpConstructor::CallOnEventHit(UPrimitiveComponent * MyComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, bool SelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult & Hit)
-{
-}
-
-void URuntimeBpConstructor::CallOnComponentHit(UPrimitiveComponent * HitComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
-{
-
-}
-
-void URuntimeBpConstructor::CallOnComponentWake(UPrimitiveComponent * WakingComponent, FName BoneName)
-{
-
-}
-
-void URuntimeBpConstructor::CallOnComponentSleep(UPrimitiveComponent * SleepingComponent, FName BoneName)
-{
-
+	if (EnableMultithread)
+	{
+		ContinueExecute(this, ActorHitNode->NodeIndex, 0, -1, ActorHitNode->FunctionIndex);
+	}
+	else
+	{
+		ActorHitNode->Execute(0);
+	}
 }

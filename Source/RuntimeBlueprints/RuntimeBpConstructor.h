@@ -231,76 +231,46 @@ public:
 	** Functions that the nodes can't call themselves because they're UObjects
 	*/
 
-	// UFUNCTION(BlueprintPure)
 	float GetWorldDeltaSeconds();
 
 	/*
 	** Functions called from actual code which triggers the runtime BPs
 	*/
 
-	// UFUNCTION(BlueprintCallable)
-	void CallBeginPlay();
+	// Begin play is not bound but rather it's manually called once all nodes are created. The Actor's Begin Play has likely already fired when this component is made.
+	void CallOnBeginPlay();
 
 	URuntimeBpObject* BeginPlayNode;
 
-	UFUNCTION(BlueprintCallable)
-	void CallEndPlay();
+	UFUNCTION()
+	void CallOnEndPlay(EEndPlayReason::Type EndPlayReason);
 
+	// Same story for End Play, we use the Component's End Play rather than the Actor's
 	UPROPERTY()
 	URuntimeBpObject* EndPlayNode;
 
-	UFUNCTION(BlueprintCallable)
-	void CallTick(float DeltaSeconds);
+	UFUNCTION()
+	void CallOnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* DamageInstigator, AActor* DamageCauser);
 
 	UPROPERTY()
-	URuntimeBpObject* TickNode;
+	URuntimeBpObject* TakeAnyDamageNode;
 
-	UFUNCTION(BlueprintCallable)
-	void CallOnActorBeginOverlap(AActor* OtherActor);
+	UFUNCTION()
+	void CallOnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
 	UPROPERTY()
 	URuntimeBpObject* ActorBeginOverlapNode;
 
-	UFUNCTION(BlueprintCallable)
-	void CallOnActorEndOverlap(AActor* OtherActor);
+	UFUNCTION()
+	void CallOnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
 	UPROPERTY()
 	URuntimeBpObject* ActorEndOverlapNode;
 
-	UFUNCTION(BlueprintCallable)
-	void CallOnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
-
-	UPROPERTY()
-	URuntimeBpObject* ComponentBeginOverlapNode;
-
-	UFUNCTION(BlueprintCallable)
-	void CallOnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int OtherBodyIndex);
-
-	UPROPERTY()
-	URuntimeBpObject* ComponentEndOverlapNode;
-
-	UFUNCTION(BlueprintCallable)
-	void CallOnEventHit(UPrimitiveComponent* MyComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, bool SelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit);
+	UFUNCTION()
+	void CallOnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
 
 	UPROPERTY()
 	URuntimeBpObject* ActorHitNode;
-
-	UFUNCTION(BlueprintCallable)
-	void CallOnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	UPROPERTY()
-	URuntimeBpObject* ComponentHitNode;
-
-	UFUNCTION(BlueprintCallable)
-	void CallOnComponentWake(UPrimitiveComponent* WakingComponent, FName BoneName);
-
-	UPROPERTY()
-	URuntimeBpObject* ComponentWakeNode;
-
-	UFUNCTION(BlueprintCallable)
-	void CallOnComponentSleep(UPrimitiveComponent* SleepingComponent, FName BoneName);
-
-	UPROPERTY()
-	URuntimeBpObject* ComponentSleepNode;
 
 };

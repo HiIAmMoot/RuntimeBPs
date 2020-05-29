@@ -15,7 +15,6 @@ ARuntimeBpGrenade::ARuntimeBpGrenade()
 void ARuntimeBpGrenade::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -40,7 +39,11 @@ void ARuntimeBpGrenade::PullPin()
 
 void ARuntimeBpGrenade::StartExplosion()
 {
-	Grenade_OnStartExplosion.Broadcast(this, Instigator, GetTransform());
+	if (Grenade_OnStartExplosion.IsBound())
+	{
+		Grenade_OnStartExplosion.Broadcast(this, Instigator, GetTransform());
+	}
+
 	ReceiveStartExplosion();
 
 	// Apply damage here

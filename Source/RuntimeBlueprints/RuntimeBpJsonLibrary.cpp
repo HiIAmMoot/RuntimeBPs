@@ -37,6 +37,7 @@ TArray<TSharedPtr<FJsonValue>> URuntimeBpJsonLibrary::ScriptValueToJsonValue(con
 		case EVariableTypes::StaticMesh: SCRIPT_TO_JSON_CASE(FSaveableStaticMeshArray)
 		case EVariableTypes::MaterialInterface: SCRIPT_TO_JSON_CASE(FSaveableMaterialInterfaceArray)
 		case EVariableTypes::ParticleSystem: SCRIPT_TO_JSON_CASE(FSaveableParticleSystemArray)
+		case EVariableTypes::HitResult: SCRIPT_TO_JSON_CASE(FSaveableHitResultArray)
 		default: break;
 	}
 	return TArray<TSharedPtr<FJsonValue>>();
@@ -488,6 +489,7 @@ TArray<FNodeVarArgs> URuntimeBpJsonLibrary::JsonValueToScriptValue(TArray<TShare
 		case EVariableTypes::StaticMesh: JSON_TO_SCRIPT_CASE(FSaveableStaticMeshArray)
 		case EVariableTypes::MaterialInterface: JSON_TO_SCRIPT_CASE(FSaveableMaterialInterfaceArray)
 		case EVariableTypes::ParticleSystem: JSON_TO_SCRIPT_CASE(FSaveableParticleSystemArray)
+		case EVariableTypes::HitResult: JSON_TO_SCRIPT_CASE(FSaveableHitResultArray)
 		default: break;
 	}
 	

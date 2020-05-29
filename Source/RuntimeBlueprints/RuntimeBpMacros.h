@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+//#include "Engine\EngineTypes.h"
 
 #define NODE_VAR_ARG_UNION \
 TLongUnion< bool, /* 0 */ \
@@ -31,7 +32,9 @@ TLongUnion< bool, /* 0 */ \
 	UParticleSystem*, /* 23 */ \
 	UPrimitiveComponent*, /* 24 */ \
 	APawn*, /* 25 */ \
-	ARuntimeBpGrenade* > /* 26 */ \
+	ARuntimeBpGrenade*, /* 26 */ \
+	UDamageType*, /* 27 */ \
+	FHitResult > /* 28 */ \
 
 // Make a constructor for a variable type
 #define NODE_VAR_ARG_CONSTRUCTOR(Type) \

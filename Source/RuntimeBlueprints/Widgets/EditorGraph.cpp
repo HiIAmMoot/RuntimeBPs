@@ -81,6 +81,8 @@ FString UEditorGraph::ValueToString(UPARAM(ref) TArray<FNodeVarArgs>& Values, EV
 		case EVariableTypes::Class: return URuntimeBpLibrary::GetClassArg(Values)[0] ? URuntimeBpLibrary::GetClassArg(Values)[0]->GetName() : "None";
 		case EVariableTypes::StaticMesh: return URuntimeBpLibrary::GetStaticMeshArg(Values)[0] ? URuntimeBpLibrary::GetStaticMeshArg(Values)[0]->GetName() : "None";
 		case EVariableTypes::MaterialInterface: return URuntimeBpLibrary::GetMaterialInterfaceArg(Values)[0] ? URuntimeBpLibrary::GetMaterialInterfaceArg(Values)[0]->GetName() : "None";
+		case EVariableTypes::ParticleSystem: return URuntimeBpLibrary::GetParticleSystemArg(Values)[0] ? URuntimeBpLibrary::GetParticleSystemArg(Values)[0]->GetName() : "None";
+		case EVariableTypes::HitResult: return URuntimeBpLibrary::GetHitResultArg(Values)[0].ToString();
 		default: return "";
 	}
 }
@@ -106,6 +108,8 @@ FString UEditorGraph::PinValueToJson(UPARAM(ref)FPinStruct& NodePin)
 		case EVariableTypes::Class: PINVALUE_TO_JSON_CASE(FSaveableClassArray)
 		case EVariableTypes::StaticMesh: PINVALUE_TO_JSON_CASE(FSaveableStaticMeshArray)
 		case EVariableTypes::MaterialInterface: PINVALUE_TO_JSON_CASE(FSaveableMaterialInterfaceArray)
+		case EVariableTypes::ParticleSystem: PINVALUE_TO_JSON_CASE(FSaveableParticleSystemArray)
+		case EVariableTypes::HitResult: PINVALUE_TO_JSON_CASE(FSaveableHitResultArray)
 		default: return "";
 	}
 }

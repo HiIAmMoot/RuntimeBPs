@@ -57,6 +57,7 @@ enum class EVariableTypes : uint8
 	LinearColor 			UMETA(DisplayName = "LinearColor"),
 	IntVector 				UMETA(DisplayName = "IntVector"),
 	IntVector4				UMETA(DisplayName = "IntVector4"),
+	HitResult				UMETA(DisplayName = "HitResult"),
 	// Objects
 	Object					UMETA(DisplayName = "Object"),
 	Actor	 				UMETA(DisplayName = "Actor"),
@@ -68,6 +69,7 @@ enum class EVariableTypes : uint8
 	StaticMeshComponent		UMETA(DisplayName = "StaticMeshComponent"),
 	LightComponent			UMETA(DisplayName = "LightComponent"),
 	ParticleSystemComponent	UMETA(DisplayName = "ParticleSystemComponent"),
+	DamageType				UMETA(DisplayName = "DamageType"),
 	// Assets
 	Class 					UMETA(DisplayName = "Class"),
 	StaticMesh				UMETA(DisplayName = "StaticMesh"),
@@ -135,11 +137,13 @@ struct FNodeVarArgs
 			case EVariableTypes::StaticMeshComponent: SetStaticMeshComponentArg(); break;
 			case EVariableTypes::LightComponent: SetLightComponentArg(); break;
 			case EVariableTypes::ParticleSystemComponent: SetParticleSystemComponentArg(); break;
+			case EVariableTypes::DamageType: SetDamageTypeArg(); break;
 			case EVariableTypes::Class: SetClassArg(); break;
 			case EVariableTypes::StaticMesh: SetStaticMeshArg(); break;
 			case EVariableTypes::MaterialInterface: SetMaterialInterfaceArg(); break;
 			case EVariableTypes::ParticleSystem: SetParticleSystemArg(); break;
 			case EVariableTypes::Grenade: SetGrenadeArg(); break;
+			case EVariableTypes::HitResult: SetHitResultArg(); break;
 			default: break;
 		}
 	}
@@ -158,6 +162,9 @@ struct FNodeVarArgs
 	NODE_VAR_ARG_FUNCTIONS(FIntVector4D, IntVector4, FIntVector4D(0, 0, 0, 1)) // 11
 
 	NODE_VAR_ARG_FUNCTIONS(ARuntimeBpGrenade*, Grenade, nullptr) // 26
+	NODE_VAR_ARG_FUNCTIONS(UDamageType*, DamageType, nullptr) // 27
+
+	NODE_VAR_ARG_FUNCTIONS(FHitResult, HitResult, FHitResult()) // 28
 
 	FNodeVarArgs(const FString& Value) { StringData = Value; }
 	FNodeVarArgs(FName Value) { StringData = Value.ToString(); }
@@ -298,6 +305,11 @@ struct FNodeVarArgs
 		if (VariableData.HasSubtype<ARuntimeBpGrenade*>())
 		{
 			return VariableData.GetSubtype<ARuntimeBpGrenade*>();
+		}
+
+		if (VariableData.HasSubtype<UDamageType*>())
+		{
+			return VariableData.GetSubtype<UDamageType*>();
 		}
 
 		return VariableData.GetSubtype<UObject*>();
@@ -548,7 +560,9 @@ struct FNodeVarArgs
 			case 23: return GetParticleSystemArg() == Other.GetParticleSystemArg();
 			case 24: return GetPrimitiveComponentArg() == Other.GetPrimitiveComponentArg();
 			case 25: return GetPawnArg() == Other.GetPawnArg();
-			case 26: return GetGrenadeArg() == Other.GetGrenadeArg();
+			case 26: return GetGrenadeArg() == Other.GetGrenadeArg(); 
+			case 27: return GetDamageTypeArg() == Other.GetDamageTypeArg();
+			case 28: return false; // HitResult has no equality comparison, we could make one ourselves but in most cases it's false anyway.
 			// If the subtype index is invalid then we assume it is a string type
 			default: return GetStringArg() == Other.GetStringArg();
 		}
@@ -606,6 +620,8 @@ struct FNodeVarArgsArray
 	NODE_VAR_ARRAY_FUNCTIONS(FName, Name)
 	NODE_VAR_ARRAY_FUNCTIONS(FText, Text)
 	NODE_VAR_ARRAY_FUNCTIONS(ARuntimeBpGrenade*, Grenade)
+	NODE_VAR_ARRAY_FUNCTIONS(UDamageType*, DamageType)
+	NODE_VAR_ARRAY_FUNCTIONS(FHitResult, HitResult)
 };
 
 
@@ -904,6 +920,16 @@ struct FSaveableParticleSystemArray : public FSaveableProperty
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UParticleSystem*> Array;
 	SAVEABLE_PROPERTY_ARRAY(UParticleSystem*, ParticleSystem, FSaveableParticleSystemArray)
+};
+
+USTRUCT(BlueprintType)
+struct FSaveableHitResultArray : public FSaveableProperty
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FHitResult> Array;
+	SAVEABLE_PROPERTY_ARRAY(FHitResult, HitResult, FSaveableHitResultArray)
 };
 
 USTRUCT(BlueprintType)

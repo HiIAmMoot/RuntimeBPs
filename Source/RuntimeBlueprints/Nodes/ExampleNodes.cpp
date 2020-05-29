@@ -10,7 +10,7 @@ UBeginPlay::UBeginPlay()
 {
 	NodeName = "Begin Play";
 	NodeDescription = "Called when this script comes into existence";
-	NodeCategory = "Start";
+	NodeCategory = "Events";
 
 	OutputPins.SetNum(1);
 	OutputPins[0].MakeNodePin("Then");
@@ -20,7 +20,7 @@ void UBeginPlay::ConstructNode(URuntimeBpConstructor* ConstructorClass, int Cons
 {
 	
 	// Register this BeginPlay node in the constructor
-	if (ConstructorClass != nullptr)
+	if (ConstructorClass)
 	{
 		ConstructorClass->BeginPlayNode = this;
 	}

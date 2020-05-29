@@ -490,6 +490,26 @@ void URuntimeBpLibrary::SetGrenadeArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, 
 	NODE_VAR_ARG_SETTER_SAFE(ARuntimeBpGrenade*, Grenade)
 }
 
+TArray<UDamageType*> URuntimeBpLibrary::GetDamageTypeArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)
+{
+	NODE_VAR_ARG_GETTER_SAFE(UDamageType*, DamageType)
+}
+
+void URuntimeBpLibrary::SetDamageTypeArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<UDamageType*> Value)
+{
+	NODE_VAR_ARG_SETTER_SAFE(UDamageType*, DamageType)
+}
+
+TArray<FHitResult> URuntimeBpLibrary::GetHitResultArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)
+{
+	NODE_VAR_ARG_GETTER_SAFE(FHitResult, HitResult)
+}
+
+void URuntimeBpLibrary::SetHitResultArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, const TArray<FHitResult>& Value)
+{
+	NODE_VAR_ARG_SETTER_SAFE(FHitResult, HitResult)
+}
+
 /*
 ** End of variable arg functions
 */
@@ -561,6 +581,7 @@ FString URuntimeBpLibrary::SaveableValueToJson(FSaveableProperty SaveableValue, 
 		case EVariableTypes::LightComponent: return FString();
 		case EVariableTypes::ParticleSystemComponent: return FString();
 		case EVariableTypes::Grenade: return FString();
+		case EVariableTypes::DamageType: return FString();
 		default: return SaveableValue.ToJson(Indent, PrettyPrint);
 	}
 }
