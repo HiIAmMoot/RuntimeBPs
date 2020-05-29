@@ -400,24 +400,5 @@ public:
 		GenericArray_Sort(ArrayAddr, ArrayProperty, bAscendingOrder, VariableName);
 		P_NATIVE_END;
 	}
-/**
-	template<typename StructType>
-	static void SerializeUnion(UPARAM(ref) StructType& Struct, TArray<uint8>& Storage)
-	{
-		UStruct* StaticStruct = StructType::StaticStruct();
-
-		FBufferArchive Buffer(true);
-		StaticStruct->SerializeBin(Buffer, &Struct);
-		Storage = Buffer;
-	};
-
-	template<typename StructType>
-	static void DeserializeUnion(UPARAM(ref) TArray<uint8>& Storage, StructType& Struct)
-	{
-		UStruct* StaticStruct = StructType::StaticStruct();
-		FMemoryReader ArReader(Storage);
-		StaticStruct->SerializeBin(ArReader, &Struct);
-	};
-	*/
 };
 
