@@ -10,7 +10,7 @@
 *
 */
 UCLASS()
-class RUNTIMEBLUEPRINTS_API UEndPlay : public URuntimeBpObject
+class RUNTIMEBLUEPRINTS_API UEndPlay : public URuntimeBpEventNode
 {
 	GENERATED_BODY()
 
@@ -28,7 +28,7 @@ protected:
 *
 */
 UCLASS()
-class RUNTIMEBLUEPRINTS_API UOnTakeAnyDamage : public URuntimeBpObject
+class RUNTIMEBLUEPRINTS_API UOnTakeAnyDamage : public URuntimeBpEventNode
 {
 	GENERATED_BODY()
 
@@ -46,7 +46,7 @@ protected:
 *
 */
 UCLASS()
-class RUNTIMEBLUEPRINTS_API UOnActorBeginOverlap : public URuntimeBpObject
+class RUNTIMEBLUEPRINTS_API UOnActorBeginOverlap : public URuntimeBpEventNode
 {
 	GENERATED_BODY()
 
@@ -64,7 +64,7 @@ protected:
 *
 */
 UCLASS()
-class RUNTIMEBLUEPRINTS_API UOnActorEndOverlap : public URuntimeBpObject
+class RUNTIMEBLUEPRINTS_API UOnActorEndOverlap : public URuntimeBpEventNode
 {
 	GENERATED_BODY()
 
@@ -82,7 +82,7 @@ protected:
 *
 */
 UCLASS()
-class RUNTIMEBLUEPRINTS_API UOnActorHit : public URuntimeBpObject
+class RUNTIMEBLUEPRINTS_API UOnActorHit : public URuntimeBpEventNode
 {
 	GENERATED_BODY()
 

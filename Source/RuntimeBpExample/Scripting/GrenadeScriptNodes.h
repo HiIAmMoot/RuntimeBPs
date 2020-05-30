@@ -9,7 +9,7 @@
 #include "GrenadeScriptNodes.generated.h"
 
 UCLASS()
-class RUNTIMEBPEXAMPLE_API UGrenadeExplode : public URuntimeBpObject
+class RUNTIMEBPEXAMPLE_API UGrenadeExplode : public URuntimeBpEventNode
 {
 	GENERATED_BODY()
 

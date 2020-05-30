@@ -15,7 +15,7 @@
 *
 */
 UCLASS()
-class RUNTIMEBLUEPRINTS_API UBeginPlay : public URuntimeBpObject
+class RUNTIMEBLUEPRINTS_API UBeginPlay : public URuntimeBpEventNode
 {
 	GENERATED_BODY()
 

@@ -111,3 +111,10 @@ public:
 	// Function in order to reset any local values inside a node in case it is inside a function. For example: Resetting a FlipFlop.
 	FORCEINLINE virtual void ResetInternalFunctionValues();
 };
+
+// This class is used to differentiate Event nodes from regular nodes
+UCLASS(BlueprintType, ClassGroup = (Custom))
+class RUNTIMEBLUEPRINTS_API URuntimeBpEventNode : public URuntimeBpObject
+{
+	GENERATED_BODY()
+};
