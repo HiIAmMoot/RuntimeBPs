@@ -39,6 +39,7 @@ Internally, each node is an UObject which contains its runtime data. Think of th
 - Saving & loading through Json
 - A Python script allowing you to mass convert functions from existing function libraries to Runtime Blueprints function
 - An example using a scriptable, throwable grenade.
+- Simple undo/redo for placement, removal and movement of nodes.
 
 ## Things to note ##
 - TLongUnion.h is generated based on Union.h in your engine source folder. You must have source files installed to generate this file.
