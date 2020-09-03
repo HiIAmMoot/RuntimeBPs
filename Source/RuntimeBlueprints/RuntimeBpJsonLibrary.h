@@ -74,8 +74,10 @@ public:
 
 	static void UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat& Script, FSaveableBPJsonFormat& SaveableScript, TArray<FNodeStruct>& RuntimeNodes, TArray<FSaveableNode>& SaveableNodes, int Index);
 
+	//static void UpdateRuntimeScriptExternalFunction(TArray<FNodeStruct>& RuntimeNodes, TMap <FString, TArray<FSaveableFunction>> ExternalFunctions)
+
 	static TArray<FNodeVarArgs> JsonValueToScriptValue(TArray<TSharedPtr<FJsonValue>> Value, EVariableTypes VariableType, bool& Success);
 
 	UFUNCTION(BlueprintCallable, Category = "JSON", meta = (Keywords = "Json String to Script"))
-	static bool JsonStringToScript(const FString& InString, FRuntimeBpJsonFormat& Script);
+	static bool JsonStringToScript(const FString& InString, FRuntimeBpJsonFormat& Script, bool LoadExternals);
 };

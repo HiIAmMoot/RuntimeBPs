@@ -6,6 +6,7 @@
 #include "Nodes/CustomNodes.h"
 
 FMultiThreadScript* URuntimeBpConstructor::Thread = nullptr;
+TMap<FString, FRuntimeBpJsonFormat> URuntimeBpConstructor::LoadedScripts = TMap<FString, FRuntimeBpJsonFormat>();
 
 //***********************************************************
 // Thread Worker Starts as NULL, prior to being instanced
@@ -104,7 +105,6 @@ bool FMultiThreadScript::IsThreadFinished()
 	return !ScriptConstructor;
 }
 
-
 //***********************************************************
 // The actual script constructor class
 //***********************************************************
@@ -133,7 +133,7 @@ void URuntimeBpConstructor::InitScriptFromSave(const FString& ScriptName, bool M
 		{
 			FRuntimeBpJsonFormat RuntimeBpJson;
 
-			if (URuntimeBpJsonLibrary::JsonStringToScript(SaveGame->GetJsonString(), RuntimeBpJson))
+			if (URuntimeBpJsonLibrary::JsonStringToScript(SaveGame->GetJsonString(), RuntimeBpJson, false))
 			{
 				InitScript(ScriptName, RuntimeBpJson.Nodes, RuntimeBpJson.Variables, RuntimeBpJson.Functions, Multithread);
 			}
@@ -263,6 +263,34 @@ AActor * URuntimeBpConstructor::SpawnActor(UClass* ActorToSpawn, FTransform cons
 		return Actor;
 	}
 	return nullptr;
+}
+
+TMap<FString, FRuntimeBpJsonFormat>& URuntimeBpConstructor::GetLoadedScripts()
+{
+	return LoadedScripts;
+}
+
+void URuntimeBpConstructor::RegisterLoadedScript(const FString & ScriptName, const FRuntimeBpJsonFormat & Script)
+{
+	LoadedScripts.Add(ScriptName, Script);
+}
+
+void URuntimeBpConstructor::UnregisterLoadedScript(const FString & ScriptName)
+{
+	LoadedScripts.Remove(ScriptName);
+}
+
+bool URuntimeBpConstructor::FindLoadedScriptEntry(const FString & ScriptName, FRuntimeBpJsonFormat & Script)
+{
+	auto FoundPair = LoadedScripts.Find(ScriptName);
+	if (FoundPair)
+	{
+		Script = *FoundPair;
+		return true;
+	}
+
+	Script = FRuntimeBpJsonFormat();
+	return false;
 }
 
 float URuntimeBpConstructor::GetWorldDeltaSeconds()

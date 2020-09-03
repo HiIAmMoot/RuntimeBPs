@@ -236,3 +236,8 @@ FSaveableVariable& URuntimeBpObject::GetConnectedVariableRef(const FPinStruct & 
 	}
 	return BPConstructor->NullVariable;
 }
+
+URuntimeBpEventNode::URuntimeBpEventNode()
+{
+	NodeCategory = "Hidden";
+}

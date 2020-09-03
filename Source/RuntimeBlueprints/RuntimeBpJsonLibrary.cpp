@@ -242,7 +242,7 @@ bool URuntimeBpJsonLibrary::ScriptToJsonString(const FRuntimeBpJsonFormat& Scrip
 	return false;
 }
 
-void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat& Script, FSaveableBPJsonFormat& SaveableScript, TArray<FNodeStruct>& RuntimeNodes, TArray<FSaveableNode>& SaveableNodes, int Index = -1)
+void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat& Script, FSaveableBPJsonFormat& SaveableScript, TArray<FNodeStruct>& RuntimeNodes, TArray<FSaveableNode>& SaveableNodes,  int Index = -1)
 {
 	int NodeIndex = 0;
 	for (FSaveableNode& Node : SaveableNodes)
@@ -301,7 +301,6 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 					continue;
 					break;
 				}
-
 			}
 
 			if (!DefaultObject->DynamicInput && DefaultObject->InputPins.Num() != 0)
@@ -496,7 +495,7 @@ TArray<FNodeVarArgs> URuntimeBpJsonLibrary::JsonValueToScriptValue(TArray<TShare
 	return TArray<FNodeVarArgs>();
 }
 
-bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRuntimeBpJsonFormat& Script)
+bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRuntimeBpJsonFormat& Script, bool LoadExternals = false)
 {
 	// Start by defining the field names
 	FString NodeArrayFieldName = "nodes";
@@ -530,23 +529,49 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 			// We now have the node, we must get the input pin array now
 			const TSharedPtr<FJsonObject>* NodeObject;
 			const TArray<TSharedPtr<FJsonValue>>* InputArray;
-			if (Node->TryGetObject(NodeObject) && NodeObject->Get()->TryGetArrayField(InputPinFieldName, InputArray))
+			if (Node->TryGetObject(NodeObject))
 			{
-				int InputIndex = 0;
-				// We should have the input pins now
-				for (TSharedPtr<FJsonValue> Input : *InputArray)
+				// We get external references at this stage before the values are cleared. This is because we'll need them when the defaults are updated.
+
+				/*bool ExternalFunctionCall = false;
+				FString FunctionName;
+				if (NodeObject->Get()->TryGetStringField(FunctionNodeFieldName, FunctionName) && FunctionName.Contains("CallFunctionFromScript"))
 				{
-					// UE_LOG(LogJson, Verbose, TEXT("--- Purge ---"));
-					// UE_LOG(LogJson, Verbose, TEXT("NodeIndex: %s"), *FString::FromInt(NodeIndex));
-					// UE_LOG(LogJson, Verbose, TEXT("InputIndex: %s"), *FString::FromInt(InputIndex));
-					const TSharedPtr<FJsonObject>* InputObject;
-					const TArray<TSharedPtr<FJsonValue>> ValueArray = TArray<TSharedPtr<FJsonValue>>();
-					// We should be in the Input pin struct now and can set the value
-					if (Input->TryGetObject(InputObject))
+					ExternalFunctionCall = true;
+				}*/
+
+				if (NodeObject->Get()->TryGetArrayField(InputPinFieldName, InputArray))
+				{
+
+					int InputIndex = 0;
+					// We should have the input pins now
+					for (TSharedPtr<FJsonValue> Input : *InputArray)
 					{
-						InputObject->Get()->SetArrayField(ValueFieldName, ValueArray);
+						// UE_LOG(LogJson, Verbose, TEXT("--- Purge ---"));
+						// UE_LOG(LogJson, Verbose, TEXT("NodeIndex: %s"), *FString::FromInt(NodeIndex));
+						// UE_LOG(LogJson, Verbose, TEXT("InputIndex: %s"), *FString::FromInt(InputIndex));
+						const TSharedPtr<FJsonObject>* InputObject;
+						const TArray<TSharedPtr<FJsonValue>> ValueArray = TArray<TSharedPtr<FJsonValue>>();
+						// We should be in the Input pin struct now and can set the value
+						if (Input->TryGetObject(InputObject))
+						{
+							/*const TArray<TSharedPtr<FJsonValue>>* ScriptPathArray;
+							if (ExternalFunctionCall && InputIndex == 1, InputObject->Get()->TryGetArrayField(ValueFieldName, ScriptPathArray))
+							{
+								for (TSharedPtr<FJsonValue> ScriptPath : *ScriptPathArray)
+								{
+									FString ScriptPathValue;
+									if (ScriptPath->TryGetString(ScriptPathValue))
+									{
+										UE_LOG(LogJson, Warning, TEXT("Script path: %s"), *ScriptPathValue);
+									}
+								}
+							}*/
+
+							InputObject->Get()->SetArrayField(ValueFieldName, ValueArray);
+						}
+						InputIndex++;
 					}
-					InputIndex++;
 				}
 			}
 			NodeIndex++;
@@ -678,6 +703,8 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 		return false;
 	}
 
+	//TMap<FString, TArray<FRuntimeFunction>> 
+
 	// We now have to restore the struct values, looping the same way we did when emptying the values.
 	// We get the array which contains the nodes and loop through
 	if (JsonObject->TryGetArrayField(NodeArrayFieldName, NodeArray))
@@ -685,6 +712,8 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 		int NodeIndex = 0;
 		for (TSharedPtr<FJsonValue> Node : *NodeArray)
 		{
+			// Get the NodeType to check for external function calls
+			//ENodeType NodeType = Cast<URuntimeBpObject>(Script.Nodes[NodeIndex].NodeClass->GetDefaultObject(true))->NodeType;
 			// We now have the node, we must get the input pin array now
 			const TSharedPtr<FJsonObject>* NodeObject;
 			const TArray<TSharedPtr<FJsonValue>>* InputArray;
@@ -821,7 +850,6 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 				FunctionIndex++;
 			}
 		}
-
 	}
 	return true;
 }

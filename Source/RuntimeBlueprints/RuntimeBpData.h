@@ -20,7 +20,6 @@
 RUNTIMEBLUEPRINTS_API DECLARE_LOG_CATEGORY_EXTERN(LogRuntimeBps, Log, All);
 
 class URuntimeBpObject;
-//class ARuntimeBpGrenade;
 
 // The ways a pin can connect
 UENUM(BlueprintType)
@@ -32,6 +31,7 @@ enum class ENodeType : uint8
 	LocalVariableGetter 	UMETA(DisplayName = "LocalVariableGetter"),
 	LocalVariableSetter 	UMETA(DisplayName = "LocalVariableSetter"),
 	CustomFunction 			UMETA(DisplayName = "CustomFunction"),
+	ExternalFunction 		UMETA(DisplayName = "ExternalFunction"),
 	FunctionStart			UMETA(DisplayName = "FunctionStart"),
 	FunctionEnd				UMETA(DisplayName = "FunctionEnd"),
 	Graph					UMETA(DisplayName = "Graph")
@@ -1521,6 +1521,9 @@ struct FRuntimeBpJsonFormat
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FRuntimeFunction> Functions;
 
+	// All Script References
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FString> References;
 
 	FRuntimeBpJsonFormat()
 	{}
@@ -1544,6 +1547,10 @@ struct FSaveableBPJsonFormat
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FSaveableFunction> Functions;
 
+	// All Script References
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FString> References;
+
 	FSaveableBPJsonFormat()
 	{}
 
@@ -1564,7 +1571,7 @@ struct FSaveableBPJsonFormat
 
 		// Init variables
 		Variables = Script.Variables;
-
+		
 		// Init custom functions
 		Functions.Empty();
 		Functions.Reserve(Script.Functions.Num());
@@ -1572,6 +1579,8 @@ struct FSaveableBPJsonFormat
 		{
 			Functions.Add(FSaveableFunction(Function));
 		}
+
+		References = Script.References;
 	}
 
 	void ToScript(FRuntimeBpJsonFormat& Script)
@@ -1596,5 +1605,7 @@ struct FSaveableBPJsonFormat
 			Function.ToScript(Script.Functions[Index]);
 			Index++;
 		}
+
+		Script.References = References;
 	}
 };

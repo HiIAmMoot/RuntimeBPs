@@ -170,6 +170,8 @@ public:
 	// The script thread
 	static FMultiThreadScript* Thread;
 
+	static TMap<FString, FRuntimeBpJsonFormat> LoadedScripts;
+
 	// All BP Nodes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Nodes", Keywords = "Constructor class Json File"))
 	FString JsonFile;
@@ -207,6 +209,18 @@ public:
 
 	FORCEINLINE bool GetMultiThread() const { return EnableMultithread; }
 
+	UFUNCTION(BlueprintPure, meta = (Category = "Runtime Values", Keywords = "Get Loaded Scripts"))
+	static TMap<FString, FRuntimeBpJsonFormat>& GetLoadedScripts();
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Add Loaded Script"))
+	static void RegisterLoadedScript(const FString& ScriptName, const FRuntimeBpJsonFormat& Script);
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Add Loaded Script"))
+	static void UnregisterLoadedScript(const FString& ScriptName);
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Add Loaded Script"))
+	static bool FindLoadedScriptEntry(const FString& ScriptName, FRuntimeBpJsonFormat& Script);
+	
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Init Script"))
 	void InitScript(const FString& ScriptName, UPARAM(ref) TArray<FNodeStruct>& InNodes, UPARAM(ref) TArray<FSaveableVariable>& InVariables, UPARAM(ref) TArray<FRuntimeFunction>& InFunctions, bool Multithread = true);
 

@@ -469,25 +469,3 @@ void UGetAllActorsOfClass::Execute(int Index, int FromLoopIndex)
 		Super::Execute(0, FromLoopIndex);// 0 here is the output pins array index
 	}
 }
-
-UActorHasScript::UActorHasScript()
-{
-	NodeName = "Actor Has Script";
-	NodeCategory = "Script";
-
-	InputPins.SetNum(2);
-	InputPins[0].MakeNodePin();// No args means execute
-	InputPins[1].MakeNodePin("Actor", EVariableTypes::Actor);
-	InputPins[1].Value.Array[0].SetActorArg(); // Default value
-
-	OutputPins.SetNum(2);
-	OutputPins[0].MakeNodePin("Then");
-	OutputPins[1].MakeNodePin("Return Value", EVariableTypes::Bool);
-
-}
-
-void UActorHasScript::Execute(int Index, int FromLoopIndex)
-{
-	OutputPins[1].Value.Array[0].SetBoolArg(false);
-	Super::Execute(0, FromLoopIndex);// 0 here is the output pins array index
-}

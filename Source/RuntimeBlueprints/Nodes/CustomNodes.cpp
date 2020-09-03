@@ -3,10 +3,9 @@
 #include "CustomNodes.h"
 #include "RuntimeBpConstructor.h"
 
-
 UCallFunction::UCallFunction()
 {
-	NodeName = "New Function";
+	NodeName = "Call Function";
 	NodeCategory = "Hidden";
 
 	InputPins.SetNum(1);

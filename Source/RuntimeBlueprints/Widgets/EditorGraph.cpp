@@ -113,3 +113,9 @@ FString UEditorGraph::PinValueToJson(UPARAM(ref)FPinStruct& NodePin)
 		default: return "";
 	}
 }
+
+void UEditorGraph::DuplicateEditorGraph(UEditorGraph* OutEditorGraph)
+{
+	FObjectDuplicationParameters Params = FObjectDuplicationParameters(this, OutEditorGraph);
+	StaticDuplicateObjectEx(Params);
+}

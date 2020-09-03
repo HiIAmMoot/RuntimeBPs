@@ -117,4 +117,7 @@ UCLASS(BlueprintType, ClassGroup = (Custom))
 class RUNTIMEBLUEPRINTS_API URuntimeBpEventNode : public URuntimeBpObject
 {
 	GENERATED_BODY()
+
+public:
+	URuntimeBpEventNode();
 };

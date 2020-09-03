@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "UObject/UObjectGlobals.h"
 #include "RuntimeBpData.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "RuntimeBpLibrary.h"
@@ -18,14 +19,17 @@ class RUNTIMEBLUEPRINTS_API UEditorGraph : public UUserWidget
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Nodes", Keywords = "Node Struct Array"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Nodes", Keywords = "Nodes Array"))
 	TArray<FNodeStruct> Nodes;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Variables", Keywords = "Variable Struct Array"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Variables", Keywords = "Variables Array"))
 	TArray<FSaveableVariable> Variables;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Variables", Keywords = "Variable Struct Array"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Variables", Keywords = "Custom Functions CustomFunctions Array"))
 	TArray<FRuntimeFunction> CustomFunctions;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Variables", Keywords = "Script References ScriptReferences Array"))
+	TArray<FString> ScriptReferences;
 
 public:
 
@@ -83,4 +87,7 @@ public:
 
 	template<typename StructType>
 	void DeserializeUnion(const TArray<uint8>& Storage, const StructType& Struct);*/
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Duplicate Editor Graph"))
+	void DuplicateEditorGraph(UEditorGraph* OutEditorGraph);
 };
