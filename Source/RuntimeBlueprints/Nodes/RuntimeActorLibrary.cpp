@@ -1691,7 +1691,7 @@ void UActor_K2_GetActorRelativeLocation::Execute(int Index, int FromLoopIndex)
 
 	if (Actor && Actor->GetRootComponent())
 	{
-		OutputPins[0].Value.Array[0].SetVectorArg(Actor->GetRootComponent()->RelativeLocation);
+		OutputPins[0].Value.Array[0].SetVectorArg(Actor->GetRootComponent()->GetRelativeLocation());
 
 	}
 	else
@@ -1773,7 +1773,7 @@ void UActor_K2_GetActorRelativeRotation::Execute(int Index, int FromLoopIndex)
 	if (Actor && Actor->GetRootComponent())
 	{
 
-		OutputPins[0].Value.Array[0].SetRotatorArg(Actor->GetRootComponent()->RelativeRotation);
+		OutputPins[0].Value.Array[0].SetRotatorArg(Actor->GetRootComponent()->GetRelativeRotation());
 
 	}
 	else

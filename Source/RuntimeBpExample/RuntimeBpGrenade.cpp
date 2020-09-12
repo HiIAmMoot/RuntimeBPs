@@ -41,7 +41,7 @@ void ARuntimeBpGrenade::StartExplosion()
 {
 	if (Grenade_OnStartExplosion.IsBound())
 	{
-		Grenade_OnStartExplosion.Broadcast(this, Instigator, GetTransform());
+		Grenade_OnStartExplosion.Broadcast(this, GetInstigator(), GetTransform());
 	}
 
 	ReceiveStartExplosion();

@@ -37,7 +37,6 @@ void UPawn_GetMovementBaseActor::Execute(int Index, int FromLoopIndex)
 	Super::Execute(0, FromLoopIndex);// Index here is the array index
 }
 
-
 UPawn_IsControlled::UPawn_IsControlled()
 {
 	NodeName = "Is Controlled";
@@ -52,13 +51,12 @@ UPawn_IsControlled::UPawn_IsControlled()
 	OutputPins[0].MakeNodePin("Return", EVariableTypes::Bool);// PinName + PinType
 }
 
-
 void UPawn_IsControlled::Execute(int Index, int FromLoopIndex)
 {
     if (GetConnectedPinValue(InputPins[0]).GetPawnArg())
     {
          
-	OutputPins[0].Value.Array[0].SetBoolArg(GetConnectedPinValue(InputPins[0]).GetPawnArg()->IsControlled());
+	OutputPins[0].Value.Array[0].SetBoolArg(GetConnectedPinValue(InputPins[0]).GetPawnArg()->IsPawnControlled());
              
     }
     else
@@ -68,7 +66,6 @@ void UPawn_IsControlled::Execute(int Index, int FromLoopIndex)
     }
 	Super::Execute(0, FromLoopIndex);// Index here is the array index
 }
-
 
 UPawn_GetControlRotation::UPawn_GetControlRotation()
 {
