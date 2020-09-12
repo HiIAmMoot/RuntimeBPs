@@ -6,7 +6,7 @@ public class RuntimeBlueprints : ModuleRules
 {
 	public RuntimeBlueprints(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PrivatePCHHeaderFile = "RuntimeBpPCH.h";
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "JSON", "JsonUtilities", "InputCore", "RuntimeBpExample" });

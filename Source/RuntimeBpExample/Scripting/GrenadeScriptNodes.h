@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RuntimeBpObject.h"
-#include "RuntimeBpLibrary.h"
+#include "RuntimeBlueprints/RuntimeBpObject.h"
+#include "RuntimeBlueprints/RuntimeBpLibrary.h"
 #include "GrenadeScript.h"
 #include "GrenadeScriptNodes.generated.h"
 

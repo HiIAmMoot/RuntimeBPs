@@ -12,7 +12,7 @@
 #include "GameFramework/Character.h"
 #include "Components/LightComponent.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "RuntimeBpGrenade.h"
+#include "RuntimeBpExample/RuntimeBpGrenade.h"
 
 #include "RuntimeBpData.generated.h"
 
