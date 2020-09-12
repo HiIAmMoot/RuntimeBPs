@@ -183,6 +183,22 @@ public:
  *
  */
 UCLASS()
+class RUNTIMEBLUEPRINTS_API UMakeEmptyArray : public URuntimeBpObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UMakeEmptyArray();
+
+	virtual void Execute(int Index, int FromLoopIndex = -1) override;
+
+};
+
+/**
+ *
+ */
+UCLASS()
 class RUNTIMEBLUEPRINTS_API UGetAllActorsOfClass : public URuntimeBpObject
 {
 	GENERATED_BODY()
