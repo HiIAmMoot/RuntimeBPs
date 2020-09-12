@@ -363,47 +363,56 @@ void URuntimeBpConstructor::CallOnTakeAnyDamage(AActor* DamagedActor, float Dama
 
 void URuntimeBpConstructor::CallOnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
-	ActorBeginOverlapNode->OutputPins[1].Value.Array[0].SetActorArg(OverlappedActor);
-	ActorBeginOverlapNode->OutputPins[2].Value.Array[0].SetActorArg(OtherActor);
+	if (ActorEndOverlapNode)
+	{
+		ActorBeginOverlapNode->OutputPins[1].Value.Array[0].SetActorArg(OverlappedActor);
+		ActorBeginOverlapNode->OutputPins[2].Value.Array[0].SetActorArg(OtherActor);
 
-	if (EnableMultithread)
-	{
-		ContinueExecute(this, ActorBeginOverlapNode->NodeIndex, 0, -1, ActorBeginOverlapNode->FunctionIndex);
-	}
-	else
-	{
-		ActorBeginOverlapNode->Execute(0);
+		if (EnableMultithread)
+		{
+			ContinueExecute(this, ActorBeginOverlapNode->NodeIndex, 0, -1, ActorBeginOverlapNode->FunctionIndex);
+		}
+		else
+		{
+			ActorBeginOverlapNode->Execute(0);
+		}
 	}
 }
 
 void URuntimeBpConstructor::CallOnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
-	ActorEndOverlapNode->OutputPins[1].Value.Array[0].SetActorArg(OverlappedActor);
-	ActorEndOverlapNode->OutputPins[2].Value.Array[0].SetActorArg(OtherActor);
+	if (ActorEndOverlapNode)
+	{
+		ActorEndOverlapNode->OutputPins[1].Value.Array[0].SetActorArg(OverlappedActor);
+		ActorEndOverlapNode->OutputPins[2].Value.Array[0].SetActorArg(OtherActor);
 
-	if (EnableMultithread)
-	{
-		ContinueExecute(this, ActorEndOverlapNode->NodeIndex, 0, -1, ActorEndOverlapNode->FunctionIndex);
-	}
-	else
-	{
-		ActorEndOverlapNode->Execute(0);
+		if (EnableMultithread)
+		{
+			ContinueExecute(this, ActorEndOverlapNode->NodeIndex, 0, -1, ActorEndOverlapNode->FunctionIndex);
+		}
+		else
+		{
+			ActorEndOverlapNode->Execute(0);
+		}
 	}
 }
 
 void URuntimeBpConstructor::CallOnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
 {
-	ActorHitNode->OutputPins[1].Value.Array[0].SetActorArg(SelfActor);
-	ActorHitNode->OutputPins[2].Value.Array[0].SetActorArg(OtherActor);
-	ActorHitNode->OutputPins[3].Value.Array[0].SetVectorArg(NormalImpulse);
-	ActorHitNode->OutputPins[4].Value.Array[0].SetHitResultArg(Hit);
+	if (ActorHitNode)
+	{
+		ActorHitNode->OutputPins[1].Value.Array[0].SetActorArg(SelfActor);
+		ActorHitNode->OutputPins[2].Value.Array[0].SetActorArg(OtherActor);
+		ActorHitNode->OutputPins[3].Value.Array[0].SetVectorArg(NormalImpulse);
+		ActorHitNode->OutputPins[4].Value.Array[0].SetHitResultArg(Hit);
 
-	if (EnableMultithread)
-	{
-		ContinueExecute(this, ActorHitNode->NodeIndex, 0, -1, ActorHitNode->FunctionIndex);
-	}
-	else
-	{
-		ActorHitNode->Execute(0);
+		if (EnableMultithread)
+		{
+			ContinueExecute(this, ActorHitNode->NodeIndex, 0, -1, ActorHitNode->FunctionIndex);
+		}
+		else
+		{
+			ActorHitNode->Execute(0);
+		}
 	}
 }
