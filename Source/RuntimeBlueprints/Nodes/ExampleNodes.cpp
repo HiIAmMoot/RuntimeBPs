@@ -401,9 +401,9 @@ UMakeArray::UMakeArray()
 
 	DynamicInput = true;
 
-	InputPins.SetNum(2);
+	InputPins.SetNum(1);
 	InputPins[0].MakeNodePin("[0]", EVariableTypes::WildCard);
-	InputPins[1].MakeNodePin("[1]", EVariableTypes::WildCard);
+	//InputPins[1].MakeNodePin("[1]", EVariableTypes::WildCard);
 
 	OutputPins.SetNum(1);
 	OutputPins[0].MakeNodeArray("Array", EVariableTypes::WildCard);
@@ -419,6 +419,29 @@ void UMakeArray::Execute(int Index, int FromLoopIndex)
 	{
 		Array.Add(GetConnectedPinValue(InputPin));
 	}
+
+	OutputPins[0].Value.Array = Array;
+
+	Super::Execute(0, FromLoopIndex);// On Completed
+}
+
+UMakeEmptyArray::UMakeEmptyArray()
+{
+	NodeName = "Make Empty Array";
+	NodeDescription = "Creates a new array with no items";
+	NodeCategory = "Utilities|Array";
+
+	InputPins.SetNum(0);
+
+	OutputPins.SetNum(1);
+	OutputPins[0].MakeNodeArray("Array", EVariableTypes::WildCard);
+
+}
+
+void UMakeEmptyArray::Execute(int Index, int FromLoopIndex)
+{
+	TArray<FNodeVarArgs> Array;
+	Array.SetNum(0);
 
 	OutputPins[0].Value.Array = Array;
 
