@@ -3,7 +3,7 @@ param([string]$filepath, [string]$union_path, [int]$type_amount)
 [array]$lines = @()
 #$type_amount = 3
 #$filepath = "E:\GitHub\RuntimeBlueprints\Source\RuntimeBlueprints\LongUnion.h"
-#$union_path = "E:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\Core\Public\Containers\Union.h"
+#$union_path = "E:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\Core\Public\Containers\Union.h"
 
 Write-Host "Looking for Union.h in" $union_path
 $union = Get-Content $union_path
@@ -93,26 +93,27 @@ For ([int]$i = 0; $i -lt $type_amount; $i++) {
     #$lines += ''
 }
 
-$lines += (Extract-Union-Data -Ref_string "*Copy constructor.*" -Line_amount 9)
-$extract_data = (Extract-Union-Data -Ref_string "*Copy constructor.*" -Line_amount 18)
-$template = $extract_data[9]
-For ([int]$i = 0; $i -lt $type_amount; $i++) {
+$lines += (Extract-Union-Data -Ref_string "*Copy constructor.*" -Line_amount 7)
+#$extract_data = (Extract-Union-Data -Ref_string "*Copy constructor.*" -Line_amount 18)
+#$template = $extract_data[9]
+#Write-Host $extract_data[9]
+#For ([int]$i = 0; $i -lt $type_amount; $i++) {
+#
+#    $Letter = Number-To-Letter -Number $i
+#
+#    $loop_template = $template.replace('TypeA', ('Type' + $Letter))
+#    $loop_template = $loop_template.replace('0', $i.ToString())
+#
+#    $lines += $loop_template
+#}
+#$lines += $extract_data[15]
+#$lines += $extract_data[16]
+#$lines += $extract_data[17]
 
-    $Letter = Number-To-Letter -Number $i
-
-    $loop_template = $template.replace('TypeA', ('Type' + $Letter))
-    $loop_template = $loop_template.replace('0', $i.ToString())
-
-    $lines += $loop_template
-}
-
-$lines += $extract_data[15]
-$lines += $extract_data[16]
-$lines += $extract_data[17]
 
 $lines += (Extract-Union-Data -Ref_string "*Destructor.*" -Line_amount 84)
-
 $lines += (Extract-Union-Data -Ref_string "*Sets the union's value to NULL.*" -Line_amount 6)
+
 $extract_data = (Extract-Union-Data -Ref_string "*Sets the union's value to NULL.*" -Line_amount 14)
 $template = $extract_data[6]
 For ([int]$i = 0; $i -lt $type_amount; $i++) {
