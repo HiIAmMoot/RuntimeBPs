@@ -131,10 +131,10 @@ struct FArrayOfNodes
 	GENERATED_BODY()
 
 	UPROPERTY()
-	URuntimeBpObject* FunctionCaller;
+	URuntimeBpObject* FunctionCaller = nullptr;
 
 	UPROPERTY()
-	TArray<URuntimeBpObject*> Nodes;
+	TArray<URuntimeBpObject*> Nodes = TArray<URuntimeBpObject*>();
 };
 
 USTRUCT()
