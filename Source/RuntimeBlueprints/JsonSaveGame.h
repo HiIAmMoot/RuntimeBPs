@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Paths.h"
+#include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "GameFramework/SaveGame.h"
 #include "JsonSaveGame.generated.h"

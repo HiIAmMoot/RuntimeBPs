@@ -2,10 +2,10 @@
 
 #include "RuntimeBpLibrary.h"
 #include "Math/UnrealMathUtility.h"
-#include "Paths.h"
+#include "Misc/Paths.h"
 #include "AssetDataTagMap.h"
-#include "PlatformFile.h"
-#include "PlatformFilemanager.h"
+#include "HAL/PlatformFile.h"
+#include "HAL/PlatformFilemanager.h"
 #include "RuntimeBlueprints.h"
 
 float URuntimeBpLibrary::FCubicInterp(float StartPoint, float StartTangent, float EndPoint, float EndTangent, float Alpha)
