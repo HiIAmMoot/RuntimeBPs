@@ -25,18 +25,29 @@ UComponents_SetStaticMesh::UComponents_SetStaticMesh()
 
 void UComponents_SetStaticMesh::Execute(int Index, int FromLoopIndex)
 {
-    if (GetConnectedPinValue(InputPins[1]).GetStaticMeshComponentArg())
-    {
-         
-	OutputPins[1].Value.Array[0].SetBoolArg(GetConnectedPinValue(InputPins[1]).GetStaticMeshComponentArg()->SetStaticMesh(GetConnectedPinValue(InputPins[2]).GetStaticMeshArg()));
-             
-    }
-    else
-    {
-         // We make sure we at least set the return value so it resets and when getting the output pin it doesn't crash
-         OutputPins[1].Value.Array[0].SetBoolArg();
-    }
-	Super::Execute(0, FromLoopIndex);// Index here is the array index
+	if (GetConnectedPinValue(InputPins[1]).GetStaticMeshComponentArg())
+	{
+		if (BPConstructor->GetMultiThread())
+		{
+			// We must execute the actual spawning inside the GameThread, a crash will occur otherwise
+			AsyncTask(ENamedThreads::GameThread, [this, FromLoopIndex]()
+			{
+				OutputPins[1].Value.Array[0].SetBoolArg(GetConnectedPinValue(InputPins[1]).GetStaticMeshComponentArg()->SetStaticMesh(GetConnectedPinValue(InputPins[2]).GetStaticMeshArg()));
+				BPConstructor->ContinueExecute(BPConstructor, NodeIndex, 0, FromLoopIndex, FunctionIndex);
+			});
+		}
+		else
+		{
+			OutputPins[1].Value.Array[0].SetBoolArg(GetConnectedPinValue(InputPins[1]).GetStaticMeshComponentArg()->SetStaticMesh(GetConnectedPinValue(InputPins[2]).GetStaticMeshArg()));
+			Super::Execute(0, FromLoopIndex);// Index here is the output pins array index
+		}
+	}
+	else
+	{
+		// We make sure we at least set the return value so it resets and when getting the output pin it doesn't crash
+		OutputPins[1].Value.Array[0].SetBoolArg();
+		Super::Execute(0, FromLoopIndex);// Index here is the array index
+	}
 }
 
 
@@ -62,18 +73,19 @@ void UComponents_GetLocalBounds::Execute(int Index, int FromLoopIndex)
 {
     if (GetConnectedPinValue(InputPins[1]).GetStaticMeshComponentArg())
     {
-         FVector Min;
-	FVector Max;
-	GetConnectedPinValue(InputPins[1]).GetStaticMeshComponentArg()->GetLocalBounds(Min, Max);
+        FVector Min;
+		FVector Max;
+		GetConnectedPinValue(InputPins[1]).GetStaticMeshComponentArg()->GetLocalBounds(Min, Max);
          
-	OutputPins[1].Value.Array[0].SetVectorArg(Min);
-	OutputPins[2].Value.Array[0].SetVectorArg(Max);
+		OutputPins[1].Value.Array[0].SetVectorArg(Min);
+		OutputPins[2].Value.Array[0].SetVectorArg(Max);
 
     }
     else
     {
-         // We make sure we at least set the return value so it resets and when getting the output pin it doesn't crash
-         	
+        // We make sure we at least set the return value so it resets and when getting the output pin it doesn't crash
+		OutputPins[1].Value.Array[0].SetVectorArg();
+		OutputPins[2].Value.Array[0].SetVectorArg();
     }
 	Super::Execute(0, FromLoopIndex);// Index here is the array index
 }
