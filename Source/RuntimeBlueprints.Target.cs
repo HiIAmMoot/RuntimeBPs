@@ -8,7 +8,8 @@ public class RuntimeBlueprintsTarget : TargetRules
 	public RuntimeBlueprintsTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
+        DefaultBuildSettings = BuildSettingsVersion.V2;
 
-		ExtraModuleNames.AddRange( new string[] { "RuntimeBpExample", "RuntimeBlueprints" } );
+        ExtraModuleNames.AddRange( new string[] { "RuntimeBpExample", "RuntimeBlueprints" } );
 	}
 }

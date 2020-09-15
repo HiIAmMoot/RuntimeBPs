@@ -2,10 +2,10 @@
 
 #include "RuntimeBpLibrary.h"
 #include "Math/UnrealMathUtility.h"
-#include "Paths.h"
+#include "Misc/Paths.h"
 #include "AssetDataTagMap.h"
-#include "PlatformFile.h"
-#include "PlatformFilemanager.h"
+#include "HAL/PlatformFile.h"
+#include "HAL/PlatformFilemanager.h"
 #include "RuntimeBlueprints.h"
 
 float URuntimeBpLibrary::FCubicInterp(float StartPoint, float StartTangent, float EndPoint, float EndTangent, float Alpha)
@@ -172,9 +172,9 @@ void URuntimeBpLibrary::SetWrapTextAt(UTextLayoutWidget* TextWidget, float WrapT
 	// Doing a hacky way to set this because the source code has this variable protected.
 	if (TextWidget)
 	{
-		const UProperty* Property = (UTextLayoutWidget::StaticClass())->FindPropertyByName(FName(TEXT("WrapTextAt")));
-		((UFloatProperty*)Property)->SetPropertyValue_InContainer(TextWidget, WrapTextAt);
-		//	return ((UBoolProperty*)Property)->GetPropertyValue_InContainer(InTileLayer);
+		const FProperty* Property = (UTextLayoutWidget::StaticClass())->FindPropertyByName(FName(TEXT("WrapTextAt")));
+		((FFloatProperty*)Property)->SetPropertyValue_InContainer(TextWidget, WrapTextAt);
+		//	return ((FBoolProperty*)Property)->GetPropertyValue_InContainer(InTileLayer);
 	}
 }
 
@@ -606,48 +606,48 @@ FString URuntimeBpLibrary::SaveableValueToJson(FSaveableProperty SaveableValue, 
 	}
 }
 
-bool URuntimeBpLibrary::GenericArray_SortCompare(const UProperty* LeftProperty, void* LeftValuePtr, const UProperty* RightProperty, void* RightValuePtr)
+bool URuntimeBpLibrary::GenericArray_SortCompare(const FProperty* LeftProperty, void* LeftValuePtr, const FProperty* RightProperty, void* RightValuePtr)
 {
 	bool bResult = false;
 
-	if (const UNumericProperty *LeftNumericProperty = Cast<const UNumericProperty>(LeftProperty))
+	if (const FNumericProperty *LeftNumericProperty = CastField<const FNumericProperty>(LeftProperty))
 	{
 		if (LeftNumericProperty->IsFloatingPoint())
 		{
-			bResult = (LeftNumericProperty->GetFloatingPointPropertyValue(LeftValuePtr) < Cast<const UNumericProperty>(RightProperty)->GetFloatingPointPropertyValue(RightValuePtr));
+			bResult = (LeftNumericProperty->GetFloatingPointPropertyValue(LeftValuePtr) < CastField<const FNumericProperty>(RightProperty)->GetFloatingPointPropertyValue(RightValuePtr));
 		}
 		else if (LeftNumericProperty->IsInteger())
 		{
-			bResult = (LeftNumericProperty->GetSignedIntPropertyValue(LeftValuePtr) < Cast<const UNumericProperty>(RightProperty)->GetSignedIntPropertyValue(RightValuePtr));
+			bResult = (LeftNumericProperty->GetSignedIntPropertyValue(LeftValuePtr) < CastField<const FNumericProperty>(RightProperty)->GetSignedIntPropertyValue(RightValuePtr));
 		}
 	}
-	else if (const UBoolProperty* LeftBoolProperty = Cast<const UBoolProperty>(LeftProperty))
+	else if (const FBoolProperty* LeftBoolProperty = CastField<const FBoolProperty>(LeftProperty))
 	{
-		bResult = (!LeftBoolProperty->GetPropertyValue(LeftValuePtr) && Cast<const UBoolProperty>(RightProperty)->GetPropertyValue(RightValuePtr));
+		bResult = (!LeftBoolProperty->GetPropertyValue(LeftValuePtr) && CastField<const FBoolProperty>(RightProperty)->GetPropertyValue(RightValuePtr));
 	}
-	else if (const UNameProperty* LeftNameProperty = Cast<const UNameProperty>(LeftProperty))
+	else if (const FNameProperty* LeftNameProperty = CastField<const FNameProperty>(LeftProperty))
 	{
-		bResult = (LeftNameProperty->GetPropertyValue(LeftValuePtr).ToString() < Cast<const UNameProperty>(RightProperty)->GetPropertyValue(RightValuePtr).ToString());
+		bResult = (LeftNameProperty->GetPropertyValue(LeftValuePtr).ToString() < CastField<const FNameProperty>(RightProperty)->GetPropertyValue(RightValuePtr).ToString());
 	}
-	else if (const UStrProperty* LeftStringProperty = Cast<const UStrProperty>(LeftProperty))
+	else if (const FStrProperty* LeftStringProperty = CastField<const FStrProperty>(LeftProperty))
 	{
-		bResult = (LeftStringProperty->GetPropertyValue(LeftValuePtr) < Cast<const UStrProperty>(RightProperty)->GetPropertyValue(RightValuePtr));
+		bResult = (LeftStringProperty->GetPropertyValue(LeftValuePtr) < CastField<const FStrProperty>(RightProperty)->GetPropertyValue(RightValuePtr));
 	}
-	else if (const UTextProperty* LeftTextProperty = Cast<const UTextProperty>(LeftProperty))
+	else if (const FTextProperty* LeftTextProperty = CastField<const FTextProperty>(LeftProperty))
 	{
-		bResult = (LeftTextProperty->GetPropertyValue(LeftValuePtr).ToString() < Cast<const UTextProperty>(RightProperty)->GetPropertyValue(RightValuePtr).ToString());
+		bResult = (LeftTextProperty->GetPropertyValue(LeftValuePtr).ToString() < CastField<const FTextProperty>(RightProperty)->GetPropertyValue(RightValuePtr).ToString());
 	}
 	return bResult;
 }
 
-void URuntimeBpLibrary::GenericArray_Sort(void* TargetArray, const UArrayProperty* ArrayProp, bool bAscendingOrder /* = true */, FName VariableName /* = NAME_None */)
+void URuntimeBpLibrary::GenericArray_Sort(void* TargetArray, const FArrayProperty* ArrayProp, bool bAscendingOrder /* = true */, FName VariableName /* = NAME_None */)
 {
 	if (TargetArray)
 	{
 		FScriptArrayHelper ArrayHelper(ArrayProp, TargetArray);
 		const int32 LastIndex = ArrayHelper.Num();
 
-		if (const UObjectProperty* ObjectProperty = Cast<const UObjectProperty>(ArrayProp->Inner))
+		if (const FObjectProperty* ObjectProperty = CastField<const FObjectProperty>(ArrayProp->Inner))
 		{
 			for (int32 i = 0; i < LastIndex; ++i)
 			{
@@ -656,8 +656,8 @@ void URuntimeBpLibrary::GenericArray_Sort(void* TargetArray, const UArrayPropert
 					UObject* LeftObject = ObjectProperty->GetObjectPropertyValue(ArrayHelper.GetRawPtr(j));
 					UObject* RightObject = ObjectProperty->GetObjectPropertyValue(ArrayHelper.GetRawPtr(j + 1));
 
-					UProperty* LeftProperty = FindField<UProperty>(LeftObject->GetClass(), VariableName);
-					UProperty* RightProperty = FindField<UProperty>(RightObject->GetClass(), VariableName);
+					FProperty* LeftProperty = FindFProperty<FProperty>(LeftObject->GetClass(), VariableName);
+					FProperty* RightProperty = FindFProperty<FProperty>(RightObject->GetClass(), VariableName);
 
 					if (LeftProperty && RightProperty)
 					{
@@ -674,11 +674,11 @@ void URuntimeBpLibrary::GenericArray_Sort(void* TargetArray, const UArrayPropert
 		}
 		else
 		{
-			UProperty* Property = nullptr;
+			FProperty* Property = nullptr;
 
-			if (const UStructProperty* StructProperty = Cast<const UStructProperty>(ArrayProp->Inner))
+			if (const FStructProperty* StructProperty = CastField<const FStructProperty>(ArrayProp->Inner))
 			{
-				Property = FindField<UProperty>(StructProperty->Struct, VariableName);
+				Property = FindFProperty<FProperty>(StructProperty->Struct, VariableName);
 			}
 			else
 			{
