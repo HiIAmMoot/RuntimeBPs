@@ -167,18 +167,48 @@ void UForLoop::Next()
 	{
 		// Sleep to give the thread a bit of breathing room
 		FPlatformProcess::Sleep(0.01);
-	}
-	if (CurrentLoopIndex <= LastIndex)
-	{
-		OutputPins[1].Value.Array[0].SetIntArg(CurrentLoopIndex);
-		CurrentLoopIndex++;
-		Super::Execute(0, NodeIndex);// Loop Body
+		AsyncTask(ENamedThreads::GameThread, [this]()
+		{
+			if (CurrentLoopIndex <= LastIndex)
+			{
+				OutputPins[1].Value.Array[0].SetIntArg(CurrentLoopIndex);
+				CurrentLoopIndex++;
+				URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, NodeIndex, FunctionIndex);
+				//Super::Execute(0, NodeIndex);// Loop Body
+			}
+			else
+			{
+				URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 2, ReceivedFromLoopIndex, FunctionIndex);
+				//Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+			}
+		});
 	}
 	else
 	{
-		FPlatformProcess::Sleep(0.01);
-		Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+		if (CurrentLoopIndex <= LastIndex)
+		{
+			OutputPins[1].Value.Array[0].SetIntArg(CurrentLoopIndex);
+			CurrentLoopIndex++;
+			Super::Execute(0, NodeIndex);// Loop Body
+		}
+		else
+		{
+			if (BPConstructor->GetMultiThread())
+			{
+				FPlatformProcess::Sleep(0.01);
+				AsyncTask(ENamedThreads::GameThread, [this]()
+				{
+					URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 2, ReceivedFromLoopIndex, FunctionIndex);
+					//Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+				});
+			}
+			else
+			{
+				Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+			}
+		}
 	}
+
 }
 
 USpawn::USpawn()
