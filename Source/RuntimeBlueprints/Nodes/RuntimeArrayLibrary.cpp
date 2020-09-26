@@ -597,8 +597,13 @@ void UForEachLoop::Next()
 		if (BPConstructor->GetMultiThread() && !(CurrentLoopIndex & 1023))
 		{
 			FPlatformProcess::Sleep(0.01);
-			CurrentLoopIndex++;
-			Super::Execute(0, NodeIndex);// Loop Body
+			AsyncTask(ENamedThreads::GameThread, [this]()
+			{
+				CurrentLoopIndex++;
+				URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, NodeIndex, FunctionIndex);
+				//Super::Execute(0, NodeIndex);// Loop Body
+
+			});
 		}
 		else
 		{
@@ -608,7 +613,18 @@ void UForEachLoop::Next()
 	}
 	else
 	{
-		FPlatformProcess::Sleep(0.01);
-		Super::Execute(3, ReceivedFromLoopIndex);// On Completed
+		if (BPConstructor->GetMultiThread())
+		{
+			FPlatformProcess::Sleep(0.01);
+			AsyncTask(ENamedThreads::GameThread, [this]()
+			{
+				URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 3, ReceivedFromLoopIndex, FunctionIndex);
+				//Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+			});
+		}
+		else
+		{
+			Super::Execute(3, ReceivedFromLoopIndex);// On Completed
+		}
 	}
 }
