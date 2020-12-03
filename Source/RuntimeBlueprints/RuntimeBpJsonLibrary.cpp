@@ -206,6 +206,7 @@ bool URuntimeBpJsonLibrary::ScriptToJsonObject(const FRuntimeBpJsonFormat& Scrip
 						InputIndex++;
 					}
 				}
+				FunctionIndex++;
 			}
 		}
 
