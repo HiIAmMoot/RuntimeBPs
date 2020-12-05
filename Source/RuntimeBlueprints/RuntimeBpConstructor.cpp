@@ -7,6 +7,7 @@
 
 FMultiThreadScript* URuntimeBpConstructor::Thread = nullptr;
 TMap<FString, FRuntimeBpJsonFormat> URuntimeBpConstructor::LoadedScripts = TMap<FString, FRuntimeBpJsonFormat>();
+FString URuntimeBpConstructor::LocalScriptPath = "Scripts//";
 
 //***********************************************************
 // Thread Worker Starts as NULL, prior to being instanced
@@ -108,12 +109,13 @@ bool FMultiThreadScript::IsThreadFinished()
 //***********************************************************
 // The actual script constructor class
 //***********************************************************
-void URuntimeBpConstructor::InitScript(const FString& ScriptName, UPARAM(ref)TArray<FNodeStruct>& InNodes, UPARAM(ref)TArray<FSaveableVariable>& InVariables, UPARAM(ref)TArray<FRuntimeFunction>& InFunctions, bool Multithread)
+void URuntimeBpConstructor::InitScript(const FString& ScriptName, UPARAM(ref)TArray<FNodeStruct>& InNodes, UPARAM(ref)TArray<FSaveableVariable>& InVariables, UPARAM(ref)TArray<FRuntimeFunction>& InFunctions, UPARAM(ref)TArray<FString>& InReferences, bool Multithread)
 {
 	JsonFile = ScriptName;
 	NodeStructs = InNodes;
 	Variables = InVariables;
 	Functions = InFunctions;
+	ScriptReferences = InReferences;
 
 	ConstructBPNodes(NodeStructs, Multithread);
 
@@ -125,19 +127,10 @@ void URuntimeBpConstructor::InitScript(const FString& ScriptName, UPARAM(ref)TAr
 
 void URuntimeBpConstructor::InitScriptFromSave(const FString& ScriptName, bool Multithread)
 {
-	UJsonSaveGame* SaveGame = NewObject<UJsonSaveGame>(this);
-
-	if (SaveGame)
+	FRuntimeBpJsonFormat RuntimeBpJson;
+	if (URuntimeBpConstructor::FindLoadedScript(ScriptName, RuntimeBpJson))
 	{
-		if (SaveGame->LoadTextFile(ScriptName))
-		{
-			FRuntimeBpJsonFormat RuntimeBpJson;
-
-			if (URuntimeBpJsonLibrary::JsonStringToScript(SaveGame->GetJsonString(), RuntimeBpJson, false))
-			{
-				InitScript(ScriptName, RuntimeBpJson.Nodes, RuntimeBpJson.Variables, RuntimeBpJson.Functions, Multithread);
-			}
-		}
+		InitScript(ScriptName, RuntimeBpJson.Nodes, RuntimeBpJson.Variables, RuntimeBpJson.Functions, RuntimeBpJson.References, Multithread);
 	}
 }
 
@@ -280,13 +273,28 @@ void URuntimeBpConstructor::UnregisterLoadedScript(const FString & ScriptName)
 	LoadedScripts.Remove(ScriptName);
 }
 
-bool URuntimeBpConstructor::FindLoadedScriptEntry(const FString & ScriptName, FRuntimeBpJsonFormat & Script)
+bool URuntimeBpConstructor::FindLoadedScript(const FString& ScriptName, FRuntimeBpJsonFormat& Script, bool LoadIfNotFound)
 {
 	auto FoundPair = LoadedScripts.Find(ScriptName);
 	if (FoundPair)
 	{
 		Script = *FoundPair;
 		return true;
+	}
+	else if (LoadIfNotFound)
+	{
+		UJsonSaveGame* SaveGame = NewObject<UJsonSaveGame>();
+		bool Success = false;
+		if (SaveGame)
+		{
+			if (SaveGame->LoadTextFile(LocalScriptPath + ScriptName))
+			{
+				Success = URuntimeBpJsonLibrary::JsonStringToScript(SaveGame->GetJsonString(), Script, ScriptName, false);
+				URuntimeBpConstructor::RegisterLoadedScript(ScriptName, Script);
+			}
+			SaveGame->ConditionalBeginDestroy();
+		}
+		return Success;
 	}
 
 	Script = FRuntimeBpJsonFormat();

@@ -2,6 +2,7 @@
 
 #include "RuntimeBpJsonLibrary.h"
 #include "RuntimeBpMacros.h"
+#include "RuntimeBpConstructor.h"
 #include "RuntimeBpObject.h"
 
 bool URuntimeBpJsonLibrary::RuntimeBpDataFromJson(const FString& Json, FRuntimeBpJsonFormat& RuntimeBpData)
@@ -243,7 +244,7 @@ bool URuntimeBpJsonLibrary::ScriptToJsonString(const FRuntimeBpJsonFormat& Scrip
 	return false;
 }
 
-void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat& Script, FSaveableBPJsonFormat& SaveableScript, TArray<FNodeStruct>& RuntimeNodes, TArray<FSaveableNode>& SaveableNodes,  int Index = -1)
+void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat& Script, FSaveableBPJsonFormat& SaveableScript, TArray<FNodeStruct>& RuntimeNodes, TArray<FSaveableNode>& SaveableNodes, const FString& ThisScriptName, const TMap<FIntPoint, FString>& FunctionReferences, int Index = -1)
 {
 	int NodeIndex = 0;
 	for (FSaveableNode& Node : SaveableNodes)
@@ -304,14 +305,114 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 				}
 			}
 
-			if (!DefaultObject->DynamicInput && DefaultObject->InputPins.Num() != 0)
+			// We don't overwrite the custom function input and output lengths because right now we can't easily get the needed info to init this properly
+			switch (DefaultObject->NodeType)
 			{
-				RuntimeNodes[NodeIndex].InputPins.SetNum(DefaultObject->InputPins.Num());
-			}
+				case ENodeType::ExternalFunction:
+				{
+					// Reference index is stored inside the Exec input's node index. So we get that first.
+					int ReferenceIndex = Node.i[0].n;
+					if (SaveableScript.References.IsValidIndex(ReferenceIndex))
+					{
+						FRuntimeBpJsonFormat RuntimeBpJson;
+						FString ScriptName = SaveableScript.References[ReferenceIndex];
+						bool UpdatePins = false;
+						if (ThisScriptName == ScriptName)
+						{
+							UpdatePins = true;
+							RuntimeBpJson = Script;
+						}
+						else
+						{
+							UpdatePins = URuntimeBpConstructor::FindLoadedScript(ScriptName, RuntimeBpJson, true);
+						}
 
-			if (!DefaultObject->DynamicOutput && DefaultObject->OutputPins.Num() != 0)
-			{
-				RuntimeNodes[NodeIndex].OutputPins.SetNum(DefaultObject->OutputPins.Num());
+						auto FoundPair = FunctionReferences.Find(FIntPoint(Index, NodeIndex));
+						if (UpdatePins && FoundPair)
+						{
+							FString FunctionName = *FoundPair;
+							int FunctionCallIndex = -1;
+							int i = 0;
+							for (FRuntimeFunction& Function : RuntimeBpJson.Functions)
+							{
+								if (FunctionName == Function.FunctionName)
+								{
+									//UE_LOG(LogJson, Warning, TEXT("Function found: %s"), *FunctionName);
+									FunctionCallIndex = i;
+									break;
+								}
+								i++;
+							}
+
+							if (FunctionCallIndex != -1)
+							{
+								FRuntimeFunction& Function = RuntimeBpJson.Functions[FunctionCallIndex];
+
+								RuntimeNodes[NodeIndex].InputPins.SetNum(Function.InputPins.Num() + 2); // External function calls have 3 function inputs by default, but it's 1 less because the function itself has an exec pin
+								int PinIndex = 2; // We start 1 index early to skip the Exec
+								for (FPinStruct& FunctionPin : Function.InputPins)
+								{
+									if (PinIndex < 3)
+									{
+										PinIndex++;
+										continue;
+									}
+									//UE_LOG(LogJson, Warning, TEXT("Input PinName: %s"), *FunctionPin.PinName);
+
+									int ConnectedNodeIndex = RuntimeNodes[NodeIndex].InputPins[PinIndex].ConnectedNodeIndex;
+									int ConnectedPinIndex = RuntimeNodes[NodeIndex].InputPins[PinIndex].ConnectedPinIndex;
+									ENodeType ConnectPinType = RuntimeNodes[NodeIndex].InputPins[PinIndex].ConnectPinType;
+
+									RuntimeNodes[NodeIndex].InputPins[PinIndex] = FunctionPin;
+									RuntimeNodes[NodeIndex].InputPins[PinIndex].ConnectedNodeIndex = ConnectedNodeIndex;
+									RuntimeNodes[NodeIndex].InputPins[PinIndex].ConnectedPinIndex = ConnectedPinIndex;
+									RuntimeNodes[NodeIndex].InputPins[PinIndex].ConnectPinType = ConnectPinType;
+									PinIndex++;
+								}
+
+								RuntimeNodes[NodeIndex].OutputPins.SetNum(Function.OutputPins.Num() + 1); // External function calls have 2 function outputs by default, but it's 1 less because the function itself has an exec pin
+								PinIndex = 1; // We start 1 index early to skip the Exec
+								for (FPinStruct& FunctionPin : Function.OutputPins)
+								{
+									if (PinIndex < 2)
+									{
+										PinIndex++;
+										continue;
+									}
+									//UE_LOG(LogJson, Warning, TEXT("Output PinName: %s"), *FunctionPin.PinName);
+
+									int ConnectedNodeIndex = RuntimeNodes[NodeIndex].OutputPins[PinIndex].ConnectedNodeIndex;
+									int ConnectedPinIndex = RuntimeNodes[NodeIndex].OutputPins[PinIndex].ConnectedPinIndex;
+									ENodeType ConnectPinType = RuntimeNodes[NodeIndex].OutputPins[PinIndex].ConnectPinType;
+
+									RuntimeNodes[NodeIndex].OutputPins[PinIndex] = FunctionPin;
+									RuntimeNodes[NodeIndex].OutputPins[PinIndex].ConnectedNodeIndex = ConnectedNodeIndex;
+									RuntimeNodes[NodeIndex].OutputPins[PinIndex].ConnectedPinIndex = ConnectedPinIndex;
+									RuntimeNodes[NodeIndex].OutputPins[PinIndex].ConnectPinType = ConnectPinType;
+									PinIndex++;
+								}
+
+								//NodeIndex++;
+								//continue;
+								break;
+							}
+						}
+					}
+					// If node is somehow invalid we continue as if it's a normal node
+				}
+				default:
+				{
+					if (!DefaultObject->DynamicInput && DefaultObject->InputPins.Num() != 0)
+					{
+						RuntimeNodes[NodeIndex].InputPins.SetNum(DefaultObject->InputPins.Num());
+					}
+
+					if (!DefaultObject->DynamicOutput && DefaultObject->OutputPins.Num() != 0)
+					{
+						RuntimeNodes[NodeIndex].OutputPins.SetNum(DefaultObject->OutputPins.Num());
+					}
+					break;
+				}
 			}
 
 			int PinIndex = 0;
@@ -326,7 +427,19 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 				}
 				else
 				{
-					UsedIndex = PinLength - 1;
+					switch (DefaultObject->NodeType)
+					{
+						case ENodeType::ExternalFunction:
+						{
+							PinIndex++;
+							continue;
+							break;
+						}
+						default:
+						{
+							UsedIndex = PinLength - 1;
+						}
+					}
 				}
 
 				InputPin.PinName = DefaultObject->InputPins[UsedIndex].PinName;
@@ -346,6 +459,7 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 						{
 							// Get the variable type from the variable, the index of the variable is stored in the output variable pin index
 							InputPin.VariableType = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
+							InputPin.PinName = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						}
 						else
 						{
@@ -360,6 +474,7 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 						{
 							// Get the variable type from the variable, the index of the variable is stored in the output variable pin index
 							InputPin.VariableType = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
+							InputPin.PinName = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						}
 						else
 						{
@@ -402,7 +517,19 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 				}
 				else
 				{
-					UsedIndex = PinLength - 1;
+					switch (DefaultObject->NodeType)
+					{
+						case ENodeType::ExternalFunction:
+						{
+							PinIndex++;
+							continue;
+							break;
+						}
+						default:
+						{
+							UsedIndex = PinLength - 1;
+						}
+					}
 				}
 
 				OutputPin.PinName = DefaultObject->OutputPins[UsedIndex].PinName;
@@ -415,6 +542,7 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 					case ENodeType::VariableGetter:
 					{
 						OutputPin.VariableType = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
+						OutputPin.PinName = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						break;
 					}
 					case ENodeType::VariableSetter:
@@ -424,6 +552,7 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 						{
 							// Get the variable type from the variable, the index of the variable is stored in the output variable pin index
 							OutputPin.VariableType = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
+							OutputPin.PinName = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						}
 						else
 						{
@@ -434,6 +563,7 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 					case ENodeType::LocalVariableGetter:
 					{
 						OutputPin.VariableType = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
+						OutputPin.PinName = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						break;
 					}
 					case ENodeType::LocalVariableSetter:
@@ -443,6 +573,7 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 						{
 							// Get the variable type from the variable, the index of the variable is stored in the output variable pin index
 							OutputPin.VariableType = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
+							OutputPin.PinName = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						}
 						else
 						{
@@ -496,7 +627,7 @@ TArray<FNodeVarArgs> URuntimeBpJsonLibrary::JsonValueToScriptValue(TArray<TShare
 	return TArray<FNodeVarArgs>();
 }
 
-bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRuntimeBpJsonFormat& Script, bool LoadExternals = false)
+bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRuntimeBpJsonFormat& Script, const FString& ThisScriptName, bool LoadExternals = false)
 {
 	// Start by defining the field names
 	FString NodeArrayFieldName = "nodes";
@@ -520,6 +651,10 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 	}
 
 	// We need to empty the values of the Json objects so we can properly turn it into a struct
+	// We also need to make a copy of function references in case external function calls are used, these are the values of the second input pin of the node
+	// X of intpoint is the function index of the placed node (-1 if in main graph), Y of the intpoint is the NodeIndex, the string is the functionname
+	TMap<FIntPoint, FString> FunctionReferences = TMap<FIntPoint, FString>();
+
 	// We get the array which contains the nodes and loop through
 	const TArray<TSharedPtr<FJsonValue>>* NodeArray;
 	if (PurgedJsonObject->TryGetArrayField(NodeArrayFieldName, NodeArray))
@@ -533,13 +668,12 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 			if (Node->TryGetObject(NodeObject))
 			{
 				// We get external references at this stage before the values are cleared. This is because we'll need them when the defaults are updated.
-
-				/*bool ExternalFunctionCall = false;
+				bool ExternalFunctionCall = false;
 				FString FunctionName;
 				if (NodeObject->Get()->TryGetStringField(FunctionNodeFieldName, FunctionName) && FunctionName.Contains("CallFunctionFromScript"))
 				{
 					ExternalFunctionCall = true;
-				}*/
+				}
 
 				if (NodeObject->Get()->TryGetArrayField(InputPinFieldName, InputArray))
 				{
@@ -556,6 +690,15 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 						// We should be in the Input pin struct now and can set the value
 						if (Input->TryGetObject(InputObject))
 						{
+							if (ExternalFunctionCall && InputIndex == 1)
+							{
+								FString FunctionRef = "";
+								if (InputObject->Get()->GetArrayField(ValueFieldName).Num() > 0 && InputObject->Get()->GetArrayField(ValueFieldName)[0]->TryGetString(FunctionRef))
+								{
+									FunctionReferences.Add(FIntPoint(-1, NodeIndex), FunctionRef);
+								}
+							}
+
 							/*const TArray<TSharedPtr<FJsonValue>>* ScriptPathArray;
 							if (ExternalFunctionCall && InputIndex == 1, InputObject->Get()->TryGetArrayField(ValueFieldName, ScriptPathArray))
 							{
@@ -616,6 +759,14 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 					const TArray<TSharedPtr<FJsonValue>>* InputArray;
 					if (Node->TryGetObject(NodeObject) && NodeObject->Get()->TryGetArrayField(InputPinFieldName, InputArray))
 					{
+						// We get external references at this stage before the values are cleared. This is because we'll need them when the defaults are updated.
+						bool ExternalFunctionCall = false;
+						FString FunctionName;
+						if (NodeObject->Get()->TryGetStringField(FunctionNodeFieldName, FunctionName) && FunctionName.Contains("CallFunctionFromScript"))
+						{
+							ExternalFunctionCall = true;
+						}
+
 						int InputIndex = 0;
 						// We should have the input pins now
 						for (TSharedPtr<FJsonValue> Input : *InputArray)
@@ -625,6 +776,16 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 							// We should be in the Input pin struct now and can set the value
 							if (Input->TryGetObject(InputObject))
 							{
+								// Store function ref values for later use
+								if (ExternalFunctionCall && InputIndex == 1)
+								{
+									FString FunctionRef = "";
+									if (InputObject->Get()->GetArrayField(ValueFieldName).Num() > 0 && InputObject->Get()->GetArrayField(ValueFieldName)[0]->TryGetString(FunctionRef))
+									{
+										FunctionReferences.Add(FIntPoint(FunctionIndex, NodeIndex), FunctionRef);
+									}
+								}
+
 								InputObject->Get()->SetArrayField(ValueFieldName, ValueArray);
 							}
 							InputIndex++;
@@ -686,12 +847,12 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 	SaveableScript.ToScript(Script);
 
 	// We still need to update the runtime script with some class default values however
-	UpdateRuntimeScriptNodeDefaults(Script, SaveableScript, Script.Nodes, SaveableScript.Nodes);
+	UpdateRuntimeScriptNodeDefaults(Script, SaveableScript, Script.Nodes, SaveableScript.Nodes, ThisScriptName, FunctionReferences);
 
 	// And do the same for nodes nested in functions
 	for (int i = 0; i < SaveableScript.Functions.Num(); i++)
 	{
-		UpdateRuntimeScriptNodeDefaults(Script, SaveableScript, Script.Functions[i].Nodes, SaveableScript.Functions[i].n, i);
+		UpdateRuntimeScriptNodeDefaults(Script, SaveableScript, Script.Functions[i].Nodes, SaveableScript.Functions[i].n, ThisScriptName, FunctionReferences, i);
 	}
 
 	// We deserialize the json string again to the json object to restore the values to the object
@@ -786,14 +947,23 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 							int InputIndex = 0;
 							for (TSharedPtr<FJsonValue> Input : *InputArray)
 							{
+								bool Success = false;
+								int InputLength = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins.Num();
+								if (!(InputIndex < InputLength))
+								{
+									UE_LOG(LogJson, Warning, TEXT("Warning: Looped with an InputIndex of %i with an array length of %i. This is coming from %s."), InputIndex, InputLength, *Script.Functions[FunctionIndex].FunctionName);
+									UE_LOG(LogJson, Warning, TEXT("FunctionIndex: %s, Length: %s"), *FString::FromInt(FunctionIndex), *FString::FromInt(Script.Functions.Num()));
+									UE_LOG(LogJson, Warning, TEXT("NodeIndex: %s, Length: %s"), *FString::FromInt(NodeIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes.Num()));
+									UE_LOG(LogJson, Warning, TEXT("InputIndex: %s, Length: %s"), *FString::FromInt(InputIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins.Num()));
+									break;
+								}
 								const TSharedPtr<FJsonObject>* InputObject;
 								const TArray<TSharedPtr<FJsonValue>>* ValueArray;
 								// UE_LOG(LogJson, Warning, TEXT("----------------"));
-								// UE_LOG(LogJson, Warning, TEXT("InputIndex: %s, Length: %s"), *FString::FromInt(InputIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins.Num()));
-								// UE_LOG(LogJson, Warning, TEXT("NodeIndex: %s, Length: %s"), *FString::FromInt(NodeIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes.Num()));
 								// UE_LOG(LogJson, Warning, TEXT("FunctionIndex: %s, Length: %s"), *FString::FromInt(FunctionIndex), *FString::FromInt(Script.Functions.Num()));
+								// UE_LOG(LogJson, Warning, TEXT("NodeIndex: %s, Length: %s"), *FString::FromInt(NodeIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes.Num()));
+								// UE_LOG(LogJson, Warning, TEXT("InputIndex: %s, Length: %s"), *FString::FromInt(InputIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins.Num()));
 								EVariableTypes VariableType = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].VariableType;
-								bool Success = false;
 								// We should be in the Input pin struct now and can set the value
 								if (Input->TryGetObject(InputObject) && InputObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 								{

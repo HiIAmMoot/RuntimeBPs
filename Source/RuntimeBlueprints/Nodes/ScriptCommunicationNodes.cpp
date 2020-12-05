@@ -79,13 +79,26 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 	AActor* Actor = GetConnectedPinValue(InputPins[2]).GetActorArg();
 	if (Actor)
 	{
+		// The script this node is supposed to call is stored inside the Connected Node Index of the input pin
+		int ReferenceIndex = InputPins[0].ConnectedNodeIndex;
 		URuntimeBpConstructor* Constructor = Cast<URuntimeBpConstructor>(Actor->GetComponentByClass(URuntimeBpConstructor::StaticClass()));
+		// The function name is the string value of the pin, reason why we use save the function name instead of the function index is because the function indices can change more easy over time.
+		FString FunctionName = GetConnectedPinValue(InputPins[1]).GetStringArg();
 
-		if (Constructor && Constructor->JsonFile == GetConnectedPinValue(InputPins[1]).GetStringArg())
+		if (FunctionName != "" && Constructor && Constructor->ScriptReferences.IsValidIndex(ReferenceIndex) && Constructor->JsonFile == Constructor->ScriptReferences[ReferenceIndex])
 		{
-			// The function this node is supposed to call is stored inside the Connected Node Index of the input pin
-			int FunctionCallIndex = InputPins[0].ConnectedNodeIndex;
-			
+			int FunctionCallIndex = -1;
+			int i = 0;
+			for (FRuntimeFunction& Function : Constructor->Functions)
+			{
+				if (FunctionName == Function.FunctionName)
+				{
+					FunctionCallIndex = i;
+					break;
+				}
+				i++;
+			}
+
 			if (FunctionCallIndex > -1 && Constructor->FunctionNodes.Num() > FunctionCallIndex)
 			{
 				Constructor->FunctionNodes[FunctionCallIndex].FunctionCaller = this;
@@ -107,6 +120,5 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 			}
 		}
 	}
-
 	Super::Execute(0, FromLoopIndex);// 0 here is the output pins array index
 }

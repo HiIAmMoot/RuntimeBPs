@@ -172,6 +172,8 @@ public:
 
 	static TMap<FString, FRuntimeBpJsonFormat> LoadedScripts;
 
+	static FString LocalScriptPath;
+
 	// All BP Nodes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Nodes", Keywords = "Constructor class Json File"))
 	FString JsonFile;
@@ -197,6 +199,9 @@ public:
 	// Local variable default values for when a function is called and it needs to reset the local variables which may have been adjusted during the previous run of this function
 	TArray<FArrayOfVariables> LocalVariableDefaults;
 
+	// Array of scripts this script is referring to. The order of the array is important because the index is what is saved not the name of the script.
+	TArray<FString> ScriptReferences;
+
 	// Called when this script is supposed to be destroyed.
 	bool Kill;
 
@@ -218,11 +223,11 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Add Loaded Script"))
 	static void UnregisterLoadedScript(const FString& ScriptName);
 
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Add Loaded Script"))
-	static bool FindLoadedScriptEntry(const FString& ScriptName, FRuntimeBpJsonFormat& Script);
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Find loaded script"))
+	static bool FindLoadedScript(const FString& ScriptName, FRuntimeBpJsonFormat& Script, bool LoadIfNotFound = true);
 	
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Init Script"))
-	void InitScript(const FString& ScriptName, UPARAM(ref) TArray<FNodeStruct>& InNodes, UPARAM(ref) TArray<FSaveableVariable>& InVariables, UPARAM(ref) TArray<FRuntimeFunction>& InFunctions, bool Multithread = true);
+	void InitScript(const FString& ScriptName, UPARAM(ref) TArray<FNodeStruct>& InNodes, UPARAM(ref) TArray<FSaveableVariable>& InVariables, UPARAM(ref) TArray<FRuntimeFunction>& InFunctions, UPARAM(ref)TArray<FString>& InReferences, bool Multithread = true);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Init Script from Save"))
 	void InitScriptFromSave(const FString& ScriptName, bool Multithread = true);
