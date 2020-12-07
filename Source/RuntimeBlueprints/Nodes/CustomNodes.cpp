@@ -22,7 +22,7 @@ void UCallFunction::Execute(int Index, int FromLoopIndex)
 	int FunctionCallIndex = InputPins[0].ConnectedNodeIndex;
 	// The function this node is supposed to call is stored inside the Connected Node Index of the input pin
 	BPConstructor->FunctionNodes[FunctionCallIndex].FunctionCaller = this;
-	BPConstructor->FunctionNodes[FunctionCallIndex].Nodes[0]->UpdateCustomOutput(InputPins);
+	BPConstructor->FunctionNodes[FunctionCallIndex].Nodes[0]->UpdateCustomOutput(this, InputPins);
 
 	// Reset any values first
 	for (URuntimeBpObject* Node : BPConstructor->FunctionNodes[FunctionCallIndex].Nodes)
@@ -66,7 +66,7 @@ UFunctionEnd::UFunctionEnd()
 void UFunctionEnd::Execute(int Index, int FromLoopIndex)
 {
 	URuntimeBpObject* FunctionCaller = GetFunctionCall();
-	FunctionCaller->UpdateCustomOutput(InputPins);
+	FunctionCaller->UpdateCustomOutput(this, InputPins);
 	GetFunctionCall() = nullptr;
 	FunctionCaller->Then(0, -1);
 }

@@ -104,9 +104,9 @@ public:
 
 	TArray<URuntimeBpObject*>& GetNodeFamily();
 
-	void UpdateCustomOutput(TArray<FPinStruct>& Pins);
+	virtual void UpdateCustomOutput(URuntimeBpObject* CalledFrom, TArray<FPinStruct>& Pins, int StartIndex = 1);
 
-	FORCEINLINE void ResetCustomOutput();
+	FORCEINLINE virtual void ResetCustomOutput(int StartIndex = 1);
 
 	// Function in order to reset any local values inside a node in case it is inside a function. For example: Resetting a FlipFlop.
 	FORCEINLINE virtual void ResetInternalFunctionValues();

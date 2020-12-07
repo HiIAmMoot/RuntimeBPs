@@ -287,6 +287,8 @@ $lines += $extract_data[58]
 
 
 $lines = ($lines -join "`n").replace('TUnion', 'TLongUnion')
+$lines = $lines.replace('check(CurrentSubtypeIndex == SubtypeIndex);', 'checkf((CurrentSubtypeIndex == SubtypeIndex), TEXT("Invalid SubtypeIndex, Current is %i, tested against %i"), CurrentSubtypeIndex, SubtypeIndex);')
+
 
 $lines | Set-Content $filepath
 

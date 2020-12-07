@@ -57,13 +57,15 @@ UCallFunctionFromScript::UCallFunctionFromScript()
 	NodeName = "Call Function From Script";
 	NodeCategory = "Script";
 
-	InputPins.SetNum(3);
+	InputPins.SetNum(4);
 	InputPins[0].MakeNodePin();// No args means execute
 	InputPins[1].MakeNodePin("Script", EVariableTypes::String);
 	InputPins[1].Value.Array[0].SetStringArg(); // Default value
 	InputPins[1].Meta = "Script";
 	InputPins[2].MakeNodePin("Actor Containing Script", EVariableTypes::Actor);
 	InputPins[2].Value.Array[0].SetActorArg(); // Default value
+	InputPins[3].MakeNodePin("Add script if invalid", EVariableTypes::Bool);
+	InputPins[3].Value.Array[0].SetBoolArg(false); // Default value
 
 	OutputPins.SetNum(2);
 	OutputPins[0].MakeNodePin("Then");
@@ -79,17 +81,75 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 	AActor* Actor = GetConnectedPinValue(InputPins[2]).GetActorArg();
 	if (Actor)
 	{
-		URuntimeBpConstructor* Constructor = Cast<URuntimeBpConstructor>(Actor->GetComponentByClass(URuntimeBpConstructor::StaticClass()));
-
-		if (Constructor && Constructor->JsonFile == GetConnectedPinValue(InputPins[1]).GetStringArg())
+		// The script this node is supposed to call is stored inside the Connected Node Index of the input pin
+		int ReferenceIndex = InputPins[0].ConnectedNodeIndex;
+		Constructor = Cast<URuntimeBpConstructor>(Actor->GetComponentByClass(URuntimeBpConstructor::StaticClass()));
+		// The function name is the string value of the pin, reason why we use save the function name instead of the function index is because the function indices can change more easy over time.
+		FString FunctionName = GetConnectedPinValue(InputPins[1]).GetStringArg();
+		FString ScriptName = "";
+		if (BPConstructor->ScriptReferences.IsValidIndex(ReferenceIndex))
 		{
-			// The function this node is supposed to call is stored inside the Connected Node Index of the input pin
-			int FunctionCallIndex = InputPins[0].ConnectedNodeIndex;
-			
+			ScriptName = BPConstructor->ScriptReferences[ReferenceIndex];
+		}
+
+		if (ScriptName == "" || FunctionName == "")
+		{
+			Super::Execute(0, FromLoopIndex);// 0 here is the output pins array index
+			return;
+		}
+
+		if (!Constructor && GetConnectedPinValue(InputPins[3]).GetBoolArg())
+		{
+			if (BPConstructor->GetMultiThread())
+			{
+				URuntimeBpConstructor::Thread->Paused = true;
+
+				// We must execute the component creation inside the GameThread, a crash will occur otherwise
+				AsyncTask(ENamedThreads::GameThread, [this, Actor, ScriptName, FromLoopIndex]()
+				{
+					Constructor = NewObject<URuntimeBpConstructor>(Actor);
+					Constructor->RegisterComponent();
+					Constructor->InitScriptFromSave(ScriptName);
+					URuntimeBpConstructor::Thread->Paused = false;
+
+					//URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, FromLoopIndex, FunctionIndex);
+				});
+
+				// We must wait until Constructor is valid.
+				while (URuntimeBpConstructor::Thread->Paused)
+				{}
+
+				Continue = false;
+			}
+			else
+			{
+				Constructor = NewObject<URuntimeBpConstructor>(Actor);
+				Constructor->RegisterComponent();
+				Constructor->InitScriptFromSave(ScriptName);
+			}
+		}
+
+		if (Constructor && Constructor->JsonFile == ScriptName)
+		{
+			int FunctionCallIndex = -1;
+			int i = 0;
+			for (FRuntimeFunction& Function : Constructor->Functions)
+			{
+				if (FunctionName == Function.FunctionName)
+				{
+					FunctionCallIndex = i;
+					break;
+				}
+				i++;
+			}
+
 			if (FunctionCallIndex > -1 && Constructor->FunctionNodes.Num() > FunctionCallIndex)
 			{
 				Constructor->FunctionNodes[FunctionCallIndex].FunctionCaller = this;
-				Constructor->FunctionNodes[FunctionCallIndex].Nodes[0]->UpdateCustomOutput(InputPins);
+				//InputPins must be shortened
+				TArray<FPinStruct> CalledInputs = InputPins;
+				CalledInputs.RemoveAt(0, 4, true); // remove the first 4 input pins when updating the output as to not input the external function call pins
+				Constructor->FunctionNodes[FunctionCallIndex].Nodes[0]->UpdateCustomOutput(this, CalledInputs);
 
 				// Reset any values first
 				for (URuntimeBpObject* Node : Constructor->FunctionNodes[FunctionCallIndex].Nodes)
@@ -98,7 +158,7 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 				}
 
 				// Reset local variables
-				Constructor->Functions[FunctionCallIndex].LocalVariables = BPConstructor->LocalVariableDefaults[FunctionCallIndex].Variables;
+				Constructor->Functions[FunctionCallIndex].LocalVariables = Constructor->LocalVariableDefaults[FunctionCallIndex].Variables;
 
 				Constructor->FunctionNodes[FunctionCallIndex].Nodes[0]->Execute(0);
 				//Nodes[ConnectedFunctionStartIndex]->Execute(ConnectedPinStartIndex);
@@ -107,6 +167,35 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 			}
 		}
 	}
-
 	Super::Execute(0, FromLoopIndex);// 0 here is the output pins array index
+}
+
+void UCallFunctionFromScript::UpdateCustomOutput(URuntimeBpObject* CalledFrom, TArray<FPinStruct>& Pins, int StartIndex) // Start index is 2 to skip the exec and the success pin
+{
+	if (CalledFrom)
+	{
+		for (int i = StartIndex; i < Pins.Num(); i++)
+		{
+			OutputPins[i + 1].Value = CalledFrom->GetConnectedPinArray(Pins[i]);
+		}
+	}
+}
+
+void UCallFunctionFromScript::ResetCustomOutput(int StartIndex) // Start index is 2 to skip the exec and the success pin
+{
+	Super::ResetCustomOutput();
+	/*for (int i = StartIndex; i < OutputPins.Num(); i++)
+	{
+		if (OutputPins[i].Array)
+		{
+			OutputPins[i].Value.Array.Empty();
+		}
+		else
+		{
+			for (FNodeVarArgs Value : OutputPins[i].Value.Array)
+			{
+				Value = FNodeVarArgs(OutputPins[i].VariableType);
+			}
+		}
+	}*/
 }
