@@ -123,17 +123,21 @@ TArray<URuntimeBpObject*>& URuntimeBpObject::GetNodeFamily()
 	return BPConstructor->BPNodes;
 }
 
-void URuntimeBpObject::UpdateCustomOutput(TArray<FPinStruct>& Pins)
+void URuntimeBpObject::UpdateCustomOutput(URuntimeBpObject* CalledFrom, TArray<FPinStruct>& Pins, int StartIndex) // Start index is 1 to skip the exec
 {
-	for (int i = 1; i < Pins.Num(); i++)
+	if (CalledFrom)
 	{
-		OutputPins[i].Value = GetConnectedPinArray(Pins[i]);
+		for (int i = StartIndex; i < Pins.Num(); i++)
+		{
+			OutputPins[i].Value = CalledFrom->GetConnectedPinArray(Pins[i]);
+		}
 	}
+
 }
 
-void URuntimeBpObject::ResetCustomOutput()
+void URuntimeBpObject::ResetCustomOutput(int StartIndex) // Start index is 1 to skip the exec
 {
-	for (int i = 1; i < OutputPins.Num(); i++)
+	for (int i = StartIndex; i < OutputPins.Num(); i++)
 	{
 		if (OutputPins[i].Array)
 		{

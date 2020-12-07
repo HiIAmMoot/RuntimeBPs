@@ -174,7 +174,7 @@ public:
 
 	static FString LocalScriptPath;
 
-	// All BP Nodes
+	// The filename of the json script
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Nodes", Keywords = "Constructor class Json File"))
 	FString JsonFile;
 

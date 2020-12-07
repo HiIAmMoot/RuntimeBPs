@@ -348,11 +348,11 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 							{
 								FRuntimeFunction& Function = RuntimeBpJson.Functions[FunctionCallIndex];
 
-								RuntimeNodes[NodeIndex].InputPins.SetNum(Function.InputPins.Num() + 2); // External function calls have 3 function inputs by default, but it's 1 less because the function itself has an exec pin
-								int PinIndex = 2; // We start 1 index early to skip the Exec
+								RuntimeNodes[NodeIndex].InputPins.SetNum(Function.InputPins.Num() + 3); // External function calls have 4 function inputs by default, but it's 1 less because the function itself has an exec pin
+								int PinIndex = 3; // We start 1 index early to skip the Exec
 								for (FPinStruct& FunctionPin : Function.InputPins)
 								{
-									if (PinIndex < 3)
+									if (PinIndex < 4)
 									{
 										PinIndex++;
 										continue;
@@ -487,7 +487,7 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 						// Wildcards have their used variable type stored in the pin index, however only when the pin isn't connected (node index = -1)
 						// The index stored in the pin index is the enum index from EVariableTypes
 						// We use PinIndex instead of UsedIndex here because we're not dealing with DefaultObject
-						if (SaveableNodes[NodeIndex].i[PinIndex].p > -1 && SaveableNodes[NodeIndex].i[PinIndex].n == -1)
+						if (SaveableNodes[NodeIndex].i.IsValidIndex(PinIndex) && SaveableNodes[NodeIndex].i[PinIndex].p > -1 && SaveableNodes[NodeIndex].i[PinIndex].n == -1)
 						{
 							EVariableTypes WildCardType = static_cast<EVariableTypes>(SaveableNodes[NodeIndex].i[PinIndex].p);
 							InputPin.VariableType = WildCardType;

@@ -40,9 +40,9 @@ bool FMultiThreadScript::Init()
 // Run
 uint32 FMultiThreadScript::Run()
 {
-	while (!Kill && !Paused)
+	while (!Kill)
 	{
-		if (!ExecuteQueue.IsEmpty())
+		if (!ExecuteQueue.IsEmpty() && !Paused)
 		{
 			FNodeExecuteInstruction NodeExec;
 
@@ -200,7 +200,7 @@ void URuntimeBpConstructor::ConstructBPNodes(UPARAM(ref) TArray<FNodeStruct>& No
 		// Call begin play once nodes are spawned
 		if (BeginPlayNode)
 		{
-			Thread->ContinueExecute(this, BeginPlayNode->NodeIndex, 0, -1, BeginPlayNode->FunctionIndex);
+			URuntimeBpConstructor::ContinueExecute(this, BeginPlayNode->NodeIndex, 0, -1, BeginPlayNode->FunctionIndex);
 		}
 	}
 	else

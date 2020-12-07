@@ -49,5 +49,13 @@ public:
 
 	UCallFunctionFromScript();
 
+	URuntimeBpConstructor* Constructor;
+
+	bool Continue;
+
+	virtual void UpdateCustomOutput(URuntimeBpObject* CalledFrom, TArray<FPinStruct>& Pins, int StartIndex = 1) override;
+
+	virtual void ResetCustomOutput(int StartIndex = 2) override;
+
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 };
