@@ -90,7 +90,7 @@ void UPrint::Execute(int Index, int FromLoopIndex)
 	}
 	else
 	{
-		//UKismetSystemLibrary::PrintString(this, InString, PrintToScreen, PrintToLog, TextColor, Duration);
+		UKismetSystemLibrary::PrintString(this, InString, PrintToScreen, PrintToLog, TextColor, Duration);
 		Super::Execute(0, FromLoopIndex);// Index here is the output pins array index
 	}
 }
