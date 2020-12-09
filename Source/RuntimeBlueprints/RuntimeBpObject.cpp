@@ -20,6 +20,16 @@ void URuntimeBpObject::ConstructNode(URuntimeBpConstructor * ConstructorClass, i
 	InputPins = ConstructedInputPins;
 	OutputPins = ConstructedOutputPins;
 
+
+	// Init the args for al output pins to avoid crashes when accessing non-pure function outputs that haven't been executed yet
+	for (FPinStruct& OutputPin : OutputPins)
+	{
+		if (!OutputPin.Array)
+		{
+			OutputPin.Value.Array[0] = FNodeVarArgs(OutputPin.VariableType);
+		}
+	}
+
 	// Check if any inputs contain Exec types, if so this node isn't pure
 	for (FPinStruct& InputPin : InputPins)
 	{

@@ -51,7 +51,7 @@ public:
 
 	URuntimeBpConstructor* Constructor;
 
-	bool Continue;
+	FThreadSafeBool Continue;
 
 	virtual void UpdateCustomOutput(URuntimeBpObject* CalledFrom, TArray<FPinStruct>& Pins, int StartIndex = 1) override;
 

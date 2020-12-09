@@ -364,3 +364,28 @@ public:
 	virtual void Next() override;
 
 };
+
+UCLASS()
+class RUNTIMEBLUEPRINTS_API UForEachLoopWithBreak : public URuntimeBpObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UForEachLoopWithBreak();
+
+	TArray<FNodeVarArgs> Array;
+
+	int CurrentLoopIndex;
+
+	int LastIndex;
+
+	int ReceivedFromLoopIndex;
+
+	FThreadSafeBool Break;
+
+	virtual void Execute(int Index, int FromLoopIndex = -1) override;
+
+	virtual void Next() override;
+
+};

@@ -3468,9 +3468,8 @@ UEqualEqual_Vector2DVector2D::UEqualEqual_Vector2DVector2D()
 
 void UEqualEqual_Vector2DVector2D::Execute(int Index, int FromLoopIndex)
 {
-    
+	
 	OutputPins[0].Value.Array[0].SetBoolArg(UKismetMathLibrary::EqualEqual_Vector2DVector2D(GetConnectedPinValue(InputPins[0]).GetVector2DArg(), GetConnectedPinValue(InputPins[1]).GetVector2DArg(), GetConnectedPinValue(InputPins[2]).GetFloatArg()));
-        
 	Super::Execute(0, FromLoopIndex);// Index here is the array index
 }
 

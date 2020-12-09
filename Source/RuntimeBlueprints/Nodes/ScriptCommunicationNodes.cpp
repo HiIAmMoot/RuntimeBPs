@@ -102,7 +102,7 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 		{
 			if (BPConstructor->GetMultiThread())
 			{
-				URuntimeBpConstructor::Thread->Paused = true;
+				Continue = false;
 
 				// We must execute the component creation inside the GameThread, a crash will occur otherwise
 				AsyncTask(ENamedThreads::GameThread, [this, Actor, ScriptName, FromLoopIndex]()
@@ -110,16 +110,15 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 					Constructor = NewObject<URuntimeBpConstructor>(Actor);
 					Constructor->RegisterComponent();
 					Constructor->InitScriptFromSave(ScriptName);
-					URuntimeBpConstructor::Thread->Paused = false;
+					Continue = true;
 
 					//URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, FromLoopIndex, FunctionIndex);
 				});
 
 				// We must wait until Constructor is valid.
-				while (URuntimeBpConstructor::Thread->Paused)
+				while (!Continue)
 				{}
 
-				Continue = false;
 			}
 			else
 			{
@@ -148,8 +147,20 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 				Constructor->FunctionNodes[FunctionCallIndex].FunctionCaller = this;
 				//InputPins must be shortened
 				TArray<FPinStruct> CalledInputs = InputPins;
-				CalledInputs.RemoveAt(0, 4, true); // remove the first 4 input pins when updating the output as to not input the external function call pins
+				CalledInputs.RemoveAt(1, 3, true); // remove the input pins 1, 2 & 3 when updating the output as to not input the external function call pins
 				Constructor->FunctionNodes[FunctionCallIndex].Nodes[0]->UpdateCustomOutput(this, CalledInputs);
+				
+				// Restore retrieved values back to InputPins
+				int i2 = 4;
+				for (FPinStruct& Pin : CalledInputs)
+				{
+					// We skip the first iteration of Called Inputs because it's an exec
+					if (i > 4)
+					{
+						InputPins[i2] = Pin;
+					}
+					
+				}
 
 				// Reset any values first
 				for (URuntimeBpObject* Node : Constructor->FunctionNodes[FunctionCallIndex].Nodes)
@@ -159,11 +170,11 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 
 				// Reset local variables
 				Constructor->Functions[FunctionCallIndex].LocalVariables = Constructor->LocalVariableDefaults[FunctionCallIndex].Variables;
-
+				OutputPins[1].Value.Array[0].SetBoolArg(true);
 				Constructor->FunctionNodes[FunctionCallIndex].Nodes[0]->Execute(0);
 				//Nodes[ConnectedFunctionStartIndex]->Execute(ConnectedPinStartIndex);
 
-				OutputPins[1].Value.Array[0].SetBoolArg(true);
+				
 			}
 		}
 	}
@@ -174,9 +185,14 @@ void UCallFunctionFromScript::UpdateCustomOutput(URuntimeBpObject* CalledFrom, T
 {
 	if (CalledFrom)
 	{
-		for (int i = StartIndex; i < Pins.Num(); i++)
+		for (int i = StartIndex; i < OutputPins.Num(); i++)
 		{
-			OutputPins[i + 1].Value = CalledFrom->GetConnectedPinArray(Pins[i]);
+			// Skip the first 2 output pins
+			if (i > 1)
+			{
+				// We do - 1 because the external function call output params are shifted 1 index forward because of the Success output parameter
+				OutputPins[i].Value = CalledFrom->GetConnectedPinArray(Pins[i - 1]);
+			}
 		}
 	}
 }
