@@ -84,6 +84,29 @@ public:
 };
 
 UCLASS()
+class RUNTIMEBLUEPRINTS_API UForLoopWithBreak : public URuntimeBpObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UForLoopWithBreak();
+
+	int CurrentLoopIndex;
+
+	int LastIndex;
+
+	int ReceivedFromLoopIndex;
+
+	FThreadSafeBool Break;
+
+	virtual void Execute(int Index, int FromLoopIndex = -1) override;
+
+	virtual void Next() override;
+
+};
+
+UCLASS()
 class RUNTIMEBLUEPRINTS_API USpawn : public URuntimeBpObject
 {
 	GENERATED_BODY()

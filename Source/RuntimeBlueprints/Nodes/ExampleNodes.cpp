@@ -211,6 +211,106 @@ void UForLoop::Next()
 
 }
 
+
+UForLoopWithBreak::UForLoopWithBreak()
+{
+	NodeName = "For Loop";
+	NodeDescription = "Executes LoopBody for each Index from StartIndex to LastIndex, inclusive";
+	NodeCategory = "Flow Control";
+
+	InputPins.SetNum(4);
+	InputPins[0].MakeNodePin();// No args means execute
+	InputPins[1].MakeNodePin("First Index", EVariableTypes::Int);
+	InputPins[1].Value.Array[0].SetIntArg(0); // Default value
+	InputPins[2].MakeNodePin("Last Index", EVariableTypes::Int);
+	InputPins[2].Value.Array[0].SetIntArg(1); // Default value
+	InputPins[3].MakeNodePin("Break");// No args means execute
+
+	OutputPins.SetNum(3);
+	OutputPins[0].MakeNodePin("Loop Body");
+	OutputPins[1].MakeNodePin("Loop Index", EVariableTypes::Int);
+	OutputPins[2].MakeNodePin("Completed");
+}
+
+void UForLoopWithBreak::Execute(int Index, int FromLoopIndex)
+{
+	if (Index == 3)
+	{
+		Break = true;
+		return;
+	}
+
+	Break = false;
+	CurrentLoopIndex = GetConnectedPinValue(InputPins[1]).GetIntArg();
+	LastIndex = GetConnectedPinValue(InputPins[2]).GetIntArg();
+	ReceivedFromLoopIndex = FromLoopIndex;
+	// HalfWayPoint = LastIndex * 0.5;
+	if (LastIndex >= 0 && CurrentLoopIndex >= 0)
+	{
+		Next();
+	}
+	else
+	{
+		Super::Execute(2, FromLoopIndex);// On Completed
+	}
+}
+
+void UForLoopWithBreak::Next()
+{
+	if (Break)
+	{
+		Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+		return;
+	}
+
+	if (BPConstructor->GetMultiThread() && !(CurrentLoopIndex & 1023))
+	{
+		// Sleep to give the thread a bit of breathing room
+		FPlatformProcess::Sleep(0.01);
+		AsyncTask(ENamedThreads::GameThread, [this]()
+			{
+				if (CurrentLoopIndex <= LastIndex)
+				{
+					OutputPins[1].Value.Array[0].SetIntArg(CurrentLoopIndex);
+					CurrentLoopIndex++;
+					URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, NodeIndex, FunctionIndex);
+					//Super::Execute(0, NodeIndex);// Loop Body
+				}
+				else
+				{
+					URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 2, ReceivedFromLoopIndex, FunctionIndex);
+					//Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+				}
+			});
+	}
+	else
+	{
+		if (CurrentLoopIndex <= LastIndex)
+		{
+			OutputPins[1].Value.Array[0].SetIntArg(CurrentLoopIndex);
+			CurrentLoopIndex++;
+			Super::Execute(0, NodeIndex);// Loop Body
+		}
+		else
+		{
+			if (BPConstructor->GetMultiThread())
+			{
+				FPlatformProcess::Sleep(0.01);
+				AsyncTask(ENamedThreads::GameThread, [this]()
+					{
+						URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 2, ReceivedFromLoopIndex, FunctionIndex);
+						//Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+					});
+			}
+			else
+			{
+				Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+			}
+		}
+	}
+
+}
+
 USpawn::USpawn()
 {
 	NodeName = "Spawn Actor";
