@@ -76,6 +76,7 @@ UCallFunctionFromScript::UCallFunctionFromScript()
 
 void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 {
+	StoredFromLoopIndex = FromLoopIndex;
 	OutputPins[1].Value.Array[0].SetBoolArg(false);
 
 	AActor* Actor = GetConnectedPinValue(InputPins[2]).GetActorArg();
@@ -155,7 +156,7 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 				for (FPinStruct& Pin : CalledInputs)
 				{
 					// We skip the first iteration of Called Inputs because it's an exec
-					if (i > 4)
+					if (i2 > 4)
 					{
 						InputPins[i2] = Pin;
 					}
@@ -173,12 +174,16 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 				OutputPins[1].Value.Array[0].SetBoolArg(true);
 				Constructor->FunctionNodes[FunctionCallIndex].Nodes[0]->Execute(0);
 				//Nodes[ConnectedFunctionStartIndex]->Execute(ConnectedPinStartIndex);
-
-				
+				return;
 			}
 		}
 	}
 	Super::Execute(0, FromLoopIndex);// 0 here is the output pins array index
+}
+
+void UCallFunctionFromScript::Then(int Index, int FromLoopIndex)
+{
+	Super::Then(Index, StoredFromLoopIndex);
 }
 
 void UCallFunctionFromScript::UpdateCustomOutput(URuntimeBpObject* CalledFrom, TArray<FPinStruct>& Pins, int StartIndex) // Start index is 2 to skip the exec and the success pin

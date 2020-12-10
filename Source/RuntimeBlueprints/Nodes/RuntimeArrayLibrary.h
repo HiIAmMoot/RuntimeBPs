@@ -366,21 +366,13 @@ public:
 };
 
 UCLASS()
-class RUNTIMEBLUEPRINTS_API UForEachLoopWithBreak : public URuntimeBpObject
+class RUNTIMEBLUEPRINTS_API UForEachLoopWithBreak : public UForEachLoop
 {
 	GENERATED_BODY()
 
 public:
 
 	UForEachLoopWithBreak();
-
-	TArray<FNodeVarArgs> Array;
-
-	int CurrentLoopIndex;
-
-	int LastIndex;
-
-	int ReceivedFromLoopIndex;
 
 	FThreadSafeBool Break;
 

@@ -631,7 +631,7 @@ void UForEachLoop::Next()
 
 UForEachLoopWithBreak::UForEachLoopWithBreak()
 {
-	NodeName = "For Each Loop";
+	NodeName = "For Each Loop With Break";
 
 	InputPins.SetNum(3);
 	InputPins[0].MakeNodePin();// No args means execute
@@ -647,27 +647,15 @@ UForEachLoopWithBreak::UForEachLoopWithBreak()
 
 void UForEachLoopWithBreak::Execute(int Index, int FromLoopIndex)
 {
+	// If the break exec is called (alla index 2), we stop the loop
 	if (Index == 2)
 	{
 		Break = true;
 		return;
 	}
-
 	Break = false;
-	CurrentLoopIndex = 0;
 
-	// Copy the array so we don't have to go down the chain to get the array for each iteration
-	Array = GetConnectedPinArray(InputPins[1]).Array;
-	LastIndex = Array.Num() - 1;
-	ReceivedFromLoopIndex = FromLoopIndex;
-	if (LastIndex >= 0 && CurrentLoopIndex >= 0)
-	{
-		Next();
-	}
-	else
-	{
-		Super::Execute(3, FromLoopIndex);// On Completed
-	}
+	Super::Execute(Index, FromLoopIndex);
 }
 
 // This function is automatically called again by the last function in the execution chain by checking FromLoopIndex
@@ -679,45 +667,5 @@ void UForEachLoopWithBreak::Next()
 		return;
 	}
 
-	if (CurrentLoopIndex <= LastIndex)
-	{
-		// Array element, we don't need to know what kind of array it is to pass the value
-		OutputPins[1].Value.Array[0] = Array[CurrentLoopIndex];
-		// Array index
-		OutputPins[2].Value.Array[0].SetIntArg(CurrentLoopIndex);
-
-		// Doing a sleep every 1024 iterations to not overload the thread
-		if (BPConstructor->GetMultiThread() && !(CurrentLoopIndex & 1023))
-		{
-			FPlatformProcess::Sleep(0.01);
-			AsyncTask(ENamedThreads::GameThread, [this]()
-				{
-					CurrentLoopIndex++;
-					URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, NodeIndex, FunctionIndex);
-					//Super::Execute(0, NodeIndex);// Loop Body
-
-				});
-		}
-		else
-		{
-			CurrentLoopIndex++;
-			Super::Execute(0, NodeIndex);// Loop Body
-		}
-	}
-	else
-	{
-		if (BPConstructor->GetMultiThread())
-		{
-			FPlatformProcess::Sleep(0.01);
-			AsyncTask(ENamedThreads::GameThread, [this]()
-				{
-					URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 3, ReceivedFromLoopIndex, FunctionIndex);
-					//Super::Execute(2, ReceivedFromLoopIndex);// On Completed
-				});
-		}
-		else
-		{
-			Super::Execute(3, ReceivedFromLoopIndex);// On Completed
-		}
-	}
+	Super::Next();
 }

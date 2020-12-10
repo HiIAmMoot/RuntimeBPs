@@ -211,10 +211,9 @@ void UForLoop::Next()
 
 }
 
-
 UForLoopWithBreak::UForLoopWithBreak()
 {
-	NodeName = "For Loop";
+	NodeName = "For Loop With Break";
 	NodeDescription = "Executes LoopBody for each Index from StartIndex to LastIndex, inclusive";
 	NodeCategory = "Flow Control";
 
@@ -234,25 +233,15 @@ UForLoopWithBreak::UForLoopWithBreak()
 
 void UForLoopWithBreak::Execute(int Index, int FromLoopIndex)
 {
+	// If the break exec is called (alla index 3), we stop the loop
 	if (Index == 3)
 	{
 		Break = true;
 		return;
 	}
-
 	Break = false;
-	CurrentLoopIndex = GetConnectedPinValue(InputPins[1]).GetIntArg();
-	LastIndex = GetConnectedPinValue(InputPins[2]).GetIntArg();
-	ReceivedFromLoopIndex = FromLoopIndex;
-	// HalfWayPoint = LastIndex * 0.5;
-	if (LastIndex >= 0 && CurrentLoopIndex >= 0)
-	{
-		Next();
-	}
-	else
-	{
-		Super::Execute(2, FromLoopIndex);// On Completed
-	}
+
+	Super::Execute(Index, FromLoopIndex);
 }
 
 void UForLoopWithBreak::Next()
@@ -263,52 +252,7 @@ void UForLoopWithBreak::Next()
 		return;
 	}
 
-	if (BPConstructor->GetMultiThread() && !(CurrentLoopIndex & 1023))
-	{
-		// Sleep to give the thread a bit of breathing room
-		FPlatformProcess::Sleep(0.01);
-		AsyncTask(ENamedThreads::GameThread, [this]()
-			{
-				if (CurrentLoopIndex <= LastIndex)
-				{
-					OutputPins[1].Value.Array[0].SetIntArg(CurrentLoopIndex);
-					CurrentLoopIndex++;
-					URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, NodeIndex, FunctionIndex);
-					//Super::Execute(0, NodeIndex);// Loop Body
-				}
-				else
-				{
-					URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 2, ReceivedFromLoopIndex, FunctionIndex);
-					//Super::Execute(2, ReceivedFromLoopIndex);// On Completed
-				}
-			});
-	}
-	else
-	{
-		if (CurrentLoopIndex <= LastIndex)
-		{
-			OutputPins[1].Value.Array[0].SetIntArg(CurrentLoopIndex);
-			CurrentLoopIndex++;
-			Super::Execute(0, NodeIndex);// Loop Body
-		}
-		else
-		{
-			if (BPConstructor->GetMultiThread())
-			{
-				FPlatformProcess::Sleep(0.01);
-				AsyncTask(ENamedThreads::GameThread, [this]()
-					{
-						URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 2, ReceivedFromLoopIndex, FunctionIndex);
-						//Super::Execute(2, ReceivedFromLoopIndex);// On Completed
-					});
-			}
-			else
-			{
-				Super::Execute(2, ReceivedFromLoopIndex);// On Completed
-			}
-		}
-	}
-
+	Super::Next();
 }
 
 USpawn::USpawn()

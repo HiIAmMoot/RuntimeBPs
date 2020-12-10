@@ -19,6 +19,7 @@ UCallFunction::UCallFunction()
 
 void UCallFunction::Execute(int Index, int FromLoopIndex)
 {
+	StoredFromLoopIndex = FromLoopIndex;
 	int FunctionCallIndex = InputPins[0].ConnectedNodeIndex;
 	// The function this node is supposed to call is stored inside the Connected Node Index of the input pin
 	BPConstructor->FunctionNodes[FunctionCallIndex].FunctionCaller = this;
@@ -35,6 +36,11 @@ void UCallFunction::Execute(int Index, int FromLoopIndex)
 
 	BPConstructor->FunctionNodes[FunctionCallIndex].Nodes[0]->Execute(0);
 	//Nodes[ConnectedFunctionStartIndex]->Execute(ConnectedPinStartIndex);
+}
+
+void UCallFunction::Then(int Index, int FromLoopIndex)
+{
+	Super::Then(Index, StoredFromLoopIndex);
 }
 
 UFunctionStart::UFunctionStart()
