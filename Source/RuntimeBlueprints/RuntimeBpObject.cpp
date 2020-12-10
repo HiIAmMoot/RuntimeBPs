@@ -43,15 +43,12 @@ void URuntimeBpObject::ConstructNode(URuntimeBpConstructor * ConstructorClass, i
 		}
 	}
 
-	if (!Pure)
+	// Init the args for al output pins to avoid crashes when accessing non-pure function outputs from nodes that haven't been executed yet
+	for (FPinStruct& OutputPin : OutputPins)
 	{
-		// Init the args for al output pins to avoid crashes when accessing non-pure function outputs from nodes that haven't been executed yet
-		for (FPinStruct& OutputPin : OutputPins)
+		if (!OutputPin.Array)
 		{
-			if (!OutputPin.Array)
-			{
-				OutputPin.Value.Array[0] = FNodeVarArgs(OutputPin.VariableType);
-			}
+			OutputPin.Value.Array[0] = FNodeVarArgs(OutputPin.VariableType);
 		}
 	}
 }
