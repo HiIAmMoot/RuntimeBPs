@@ -36,6 +36,7 @@ Internally, each node is an UObject which contains its runtime data. Think of th
 	- Wildcards
 - Support for arrays for both variables and functions
 - Custom functions with local variables
+- Support for calling custom functions from different scripts
 - UEnum interpretation for C++ functions
 - A basic editor based on the UE4 Blueprint editor
 - Infinite loop checks
