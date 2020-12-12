@@ -898,11 +898,23 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 					// We should be in the Input pin struct now and can set the value
 					if (Input->TryGetObject(InputObject) && InputObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 					{
-						EVariableTypes VariableType = Script.Nodes[NodeIndex].InputPins[InputIndex].VariableType;
-						bool Array = Script.Nodes[NodeIndex].InputPins[InputIndex].Array;
-						Script.Nodes[NodeIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
+						auto& InputPin = Script.Nodes[NodeIndex].InputPins[InputIndex];
+						EVariableTypes VariableType = InputPin.VariableType;
+						bool Array = InputPin.Array;
+						InputPin.Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 					}
 					InputIndex++;
+				}
+
+				// If for whatever reason there are more pins than saved values, for example when a node changes its default inputs
+				for (int i = InputIndex; i < Script.Nodes[NodeIndex].InputPins.Num(); i++)
+				{
+					auto& InputPin = Script.Nodes[NodeIndex].InputPins[i];
+					if (!InputPin.Array)
+					{
+						InputPin.Value.Array.SetNum(1);
+						InputPin.Value.Array[0] = FNodeVarArgs(InputPin.VariableType);
+					}
 				}
 			}
 			NodeIndex++;
@@ -975,11 +987,23 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 								// We should be in the Input pin struct now and can set the value
 								if (Input->TryGetObject(InputObject) && InputObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 								{
-									EVariableTypes VariableType = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].VariableType;
-									bool Array = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].Array;
-									Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
+									auto& InputPin = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex];
+									EVariableTypes VariableType = InputPin.VariableType;
+									bool Array = InputPin.Array;
+									InputPin.Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 								}
 								InputIndex++;
+							}
+
+							// If for whatever reason there are more pins than saved values, for example when a node changes its default inputs
+							for (int i = InputIndex; i < Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins.Num(); i++)
+							{
+								auto& InputPin = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[i];
+								if (!InputPin.Array)
+								{
+									InputPin.Value.Array.SetNum(1);
+									InputPin.Value.Array[0] = FNodeVarArgs(InputPin.VariableType);
+								}
 							}
 						}
 						NodeIndex++;
