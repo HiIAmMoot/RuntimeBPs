@@ -273,7 +273,6 @@ USpawn::USpawn()
 	InputPins[0].MakeNodePin();// No args means execute
 	InputPins[1].MakeNodePin("Class", EVariableTypes::Class);
 	InputPins[1].Value.Array[0].SetClassArg(); // Default value
-
 	InputPins[2].MakeNodePin("Transform", EVariableTypes::Transform);
 	InputPins[2].Value.Array[0].SetTransformArg(); // Default value
 
@@ -292,6 +291,7 @@ void USpawn::Execute(int Index, int FromLoopIndex)
 	{
 		FTransform const& Transform = GetConnectedPinValue(InputPins[2]).GetTransformArg();
 		FActorSpawnParameters SpawnParameters = FActorSpawnParameters();
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		SpawnParameters.Owner = BPConstructor->GetOwner();
 		UWorld* World = GetWorld();
 		if (BPConstructor->GetMultiThread())
@@ -300,6 +300,11 @@ void USpawn::Execute(int Index, int FromLoopIndex)
 			AsyncTask(ENamedThreads::GameThread, [this, World, ActorToSpawn, Transform, SpawnParameters, FromLoopIndex]()
 			{
 				SpawnedActor = World->UWorld::SpawnActorAbsolute(ActorToSpawn, Transform, SpawnParameters);
+				if (SpawnedActor)
+				{
+					FHitResult HitResult = FHitResult();
+					SpawnedActor->K2_SetActorTransform(Transform, false, HitResult, true);
+				}
 				OutputPins[1].Value.Array[0].SetActorArg(SpawnedActor);
 				URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, FromLoopIndex, FunctionIndex);
 			});
@@ -307,6 +312,11 @@ void USpawn::Execute(int Index, int FromLoopIndex)
 		else
 		{
 			SpawnedActor = World->UWorld::SpawnActorAbsolute(ActorToSpawn, Transform, SpawnParameters);
+			if (SpawnedActor)
+			{
+				FHitResult HitResult = FHitResult();
+				SpawnedActor->K2_SetActorTransform(Transform, false, HitResult, true);
+			}
 			OutputPins[1].Value.Array[0].SetActorArg(SpawnedActor);
 			Super::Execute(0, FromLoopIndex);// Index here is the output pins array index
 		}
