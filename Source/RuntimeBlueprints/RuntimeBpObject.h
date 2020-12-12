@@ -83,10 +83,10 @@ public:
 	void ClearEditorValues();
 
 	// Get the single value of the specified pin, only used for non-Execs
-	FORCEINLINE virtual FNodeVarArgs GetConnectedPinValue(const FPinStruct& Pin);
+	FORCEINLINE virtual FNodeVarArgs GetConnectedPinValue(FPinStruct& Pin);
 
 	// Get the array value of the specified pin, only used for non-Execs
-	FORCEINLINE virtual FNodeVarArgsArray GetConnectedPinArray(const FPinStruct& Pin);
+	FORCEINLINE virtual FNodeVarArgsArray GetConnectedPinArray(FPinStruct& Pin);
 
 	// Get the variable this pin is connected to, if applicable. This is used for setting variables by ref
 	FSaveableVariable& GetConnectedVariableRef(const FPinStruct& Pin);

@@ -173,7 +173,7 @@ void URuntimeBpObject::ClearEditorValues()
 	NodeName = "";
 }
 
-FNodeVarArgs URuntimeBpObject::GetConnectedPinValue(const FPinStruct& Pin)
+FNodeVarArgs URuntimeBpObject::GetConnectedPinValue(FPinStruct& Pin)
 {
 	if (Pin.ConnectedNodeIndex > -1 && BPConstructor != nullptr)
 	{
@@ -191,14 +191,13 @@ FNodeVarArgs URuntimeBpObject::GetConnectedPinValue(const FPinStruct& Pin)
 		// In case the array is empty, we simply return an empty uobject value as dynamic objects should only have this happen. We should never hit this though.
 		if (Pin.Value.Array.Num() == 0)
 		{
-			FNodeVarArgs Args = FNodeVarArgs(Pin.VariableType);
-			return Args;
+			Pin.Value.Array.Add(FNodeVarArgs(Pin.VariableType));
 		}
 		return Pin.Value.Array[0];
 	}
 }
 
-FNodeVarArgsArray URuntimeBpObject::GetConnectedPinArray(const FPinStruct& Pin)
+FNodeVarArgsArray URuntimeBpObject::GetConnectedPinArray(FPinStruct& Pin)
 {
 	if (Pin.ConnectedNodeIndex > -1 && BPConstructor != nullptr)
 	{

@@ -349,7 +349,7 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 								FRuntimeFunction& Function = RuntimeBpJson.Functions[FunctionCallIndex];
 
 								RuntimeNodes[NodeIndex].InputPins.SetNum(Function.InputPins.Num() + 3); // External function calls have 4 function inputs by default, but it's 1 less because the function itself has an exec pin
-								int PinIndex = 3; // We start 1 index early to skip the Exec
+								int PinIndex = 3; // We start 1 index early to skip the Exec of the referenced function
 								for (FPinStruct& FunctionPin : Function.InputPins)
 								{
 									if (PinIndex < 4)
@@ -595,9 +595,8 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 }
 
 
-TArray<FNodeVarArgs> URuntimeBpJsonLibrary::JsonValueToScriptValue(TArray<TSharedPtr<FJsonValue>> Value, EVariableTypes VariableType, bool& Success)
+TArray<FNodeVarArgs> URuntimeBpJsonLibrary::JsonValueToScriptValue(TArray<TSharedPtr<FJsonValue>> Value, EVariableTypes VariableType, bool Array, bool& Success)
 {
-	TArray<FNodeVarArgs> NodeVarArgs;
 
 	switch (VariableType)
 	{
@@ -624,7 +623,15 @@ TArray<FNodeVarArgs> URuntimeBpJsonLibrary::JsonValueToScriptValue(TArray<TShare
 		default: break;
 	}
 	
-	return TArray<FNodeVarArgs>();
+	TArray<FNodeVarArgs> NodeVarArgs = TArray<FNodeVarArgs>();
+
+	if (Array)
+	{
+		return NodeVarArgs;
+	}
+
+	NodeVarArgs.Add(FNodeVarArgs(VariableType));
+	return NodeVarArgs;
 }
 
 bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRuntimeBpJsonFormat& Script, const FString& ThisScriptName, bool LoadExternals = false)
@@ -887,12 +894,13 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 				{
 					const TSharedPtr<FJsonObject>* InputObject;
 					const TArray<TSharedPtr<FJsonValue>>* ValueArray;
-					EVariableTypes VariableType = Script.Nodes[NodeIndex].InputPins[InputIndex].VariableType;
 					bool Success = false;
 					// We should be in the Input pin struct now and can set the value
 					if (Input->TryGetObject(InputObject) && InputObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 					{
-						Script.Nodes[NodeIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Success);
+						EVariableTypes VariableType = Script.Nodes[NodeIndex].InputPins[InputIndex].VariableType;
+						bool Array = Script.Nodes[NodeIndex].InputPins[InputIndex].Array;
+						Script.Nodes[NodeIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 					}
 					InputIndex++;
 				}
@@ -910,13 +918,14 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 				// We now have the variable, we can set the value now
 				const TSharedPtr<FJsonObject>* VariableObject;
 				const TArray<TSharedPtr<FJsonValue>>* ValueArray;
-				EVariableTypes VariableType = Script.Variables[VariableIndex].t;
 				// UE_LOG(LogJson, Warning, TEXT("VariableIndex: %s"), *FString::FromInt(VariableIndex));
 				bool Success = false;
 				if (Variable->TryGetObject(VariableObject) && VariableObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 				{
+					EVariableTypes VariableType = Script.Variables[VariableIndex].t;
+					bool Array = Script.Variables[VariableIndex].a;
 					// UE_LOG(LogJson, Warning, TEXT("VariableName: %s"), *Script.Variables[VariableIndex].n);
-					Script.Variables[VariableIndex].v = JsonValueToScriptValue(*ValueArray, VariableType, Success);
+					Script.Variables[VariableIndex].v = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 				}
 				VariableIndex++;
 			}
@@ -963,11 +972,12 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 								// UE_LOG(LogJson, Warning, TEXT("FunctionIndex: %s, Length: %s"), *FString::FromInt(FunctionIndex), *FString::FromInt(Script.Functions.Num()));
 								// UE_LOG(LogJson, Warning, TEXT("NodeIndex: %s, Length: %s"), *FString::FromInt(NodeIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes.Num()));
 								// UE_LOG(LogJson, Warning, TEXT("InputIndex: %s, Length: %s"), *FString::FromInt(InputIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins.Num()));
-								EVariableTypes VariableType = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].VariableType;
 								// We should be in the Input pin struct now and can set the value
 								if (Input->TryGetObject(InputObject) && InputObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 								{
-									Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Success);
+									EVariableTypes VariableType = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].VariableType;
+									bool Array = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].Array;
+									Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 								}
 								InputIndex++;
 							}
@@ -987,13 +997,14 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 						// We now have the variable, we can set the value now
 						const TSharedPtr<FJsonObject>* VariableObject;
 						const TArray<TSharedPtr<FJsonValue>>* ValueArray;
-						EVariableTypes VariableType = Script.Functions[FunctionIndex].LocalVariables[VariableIndex].t;
 						// UE_LOG(LogJson, Warning, TEXT("VariableIndex: %s"), *FString::FromInt(VariableIndex));
 						bool Success = false;
 						if (Variable->TryGetObject(VariableObject) && VariableObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 						{
+							EVariableTypes VariableType = Script.Functions[FunctionIndex].LocalVariables[VariableIndex].t;
+							bool Array = Script.Functions[FunctionIndex].LocalVariables[VariableIndex].a;
 							// UE_LOG(LogJson, Warning, TEXT("VariableName: %s"), *Script.Variables[VariableIndex].n);
-							Script.Functions[FunctionIndex].LocalVariables[VariableIndex].v = JsonValueToScriptValue(*ValueArray, VariableType, Success);
+							Script.Functions[FunctionIndex].LocalVariables[VariableIndex].v = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 						}
 						VariableIndex++;
 					}
@@ -1008,12 +1019,13 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 					{
 						const TSharedPtr<FJsonObject>* InputObject;
 						const TArray<TSharedPtr<FJsonValue>>* ValueArray;
-						EVariableTypes VariableType = Script.Functions[FunctionIndex].InputPins[InputIndex].VariableType;
 						bool Success = false;
 						// We should be in the Input pin struct now and can set the value
 						if (Input->TryGetObject(InputObject) && InputObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 						{
-							Script.Functions[FunctionIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Success);
+							EVariableTypes VariableType = Script.Functions[FunctionIndex].InputPins[InputIndex].VariableType;
+							bool Array = Script.Functions[FunctionIndex].InputPins[InputIndex].Array;
+							Script.Functions[FunctionIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 						}
 						InputIndex++;
 					}

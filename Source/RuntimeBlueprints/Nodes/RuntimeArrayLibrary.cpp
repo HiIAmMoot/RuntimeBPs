@@ -647,15 +647,25 @@ UForEachLoopWithBreak::UForEachLoopWithBreak()
 
 void UForEachLoopWithBreak::Execute(int Index, int FromLoopIndex)
 {
-	// If the break exec is called (alla index 2), we stop the loop
+	// If the break exec is called (ala index 2), we stop the loop
 	if (Index == 2)
 	{
+		if (ReceivedFromLoopIndex == -1)
+		{
+			FromLoopIndexFromBreak = FromLoopIndex;
+		}
+		else
+		{
+			FromLoopIndexFromBreak = ReceivedFromLoopIndex;
+		}
 		Break = true;
-		return;
 	}
-	Break = false;
+	else
+	{
+		Break = false;
+		Super::Execute(Index, FromLoopIndex);
+	}
 
-	Super::Execute(Index, FromLoopIndex);
 }
 
 // This function is automatically called again by the last function in the execution chain by checking FromLoopIndex
@@ -663,9 +673,11 @@ void UForEachLoopWithBreak::Next()
 {
 	if (Break)
 	{
-		Super::Execute(3, ReceivedFromLoopIndex);// On Completed
-		return;
+		ReceivedFromLoopIndex = FromLoopIndexFromBreak;
+		Super::Execute(3, FromLoopIndexFromBreak);// On Completed
 	}
-
-	Super::Next();
+	else
+	{
+		Super::Next();
+	}
 }

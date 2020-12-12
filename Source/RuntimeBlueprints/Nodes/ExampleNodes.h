@@ -75,7 +75,7 @@ public:
 
 	int LastIndex;
 
-	int ReceivedFromLoopIndex;
+	int ReceivedFromLoopIndex = -1;
 
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 
@@ -93,6 +93,8 @@ public:
 	UForLoopWithBreak();
 
 	FThreadSafeBool Break;
+
+	int FromLoopIndexFromBreak = -1;
 
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 

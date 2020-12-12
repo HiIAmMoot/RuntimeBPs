@@ -104,10 +104,15 @@ void USetVariable::ConstructNode(URuntimeBpConstructor * ConstructorClass, int C
 		InputPins[1].VariableType = ConstructorClass->Variables[OutputPins[1].ConnectedPinIndex].t;
 		InputPins[1].PinName = ConstructorClass->Variables[OutputPins[1].ConnectedPinIndex].n;
 		OutputPins[1].VariableType = ConstructorClass->Variables[OutputPins[1].ConnectedPinIndex].t;
+		if (!OutputPins[1].Value.Array.IsValidIndex(0))
+		{
+			OutputPins[1].Value.Array.SetNum(1);
+			OutputPins[1].Value.Array[0] = ConstructorClass->Variables[OutputPins[1].ConnectedPinIndex].v[0];
+		}
 	}
 }
 
-FNodeVarArgs USetVariable::GetConnectedPinValue(const FPinStruct& Pin)
+FNodeVarArgs USetVariable::GetConnectedPinValue(FPinStruct& Pin)
 {
 	if (BPConstructor->Variables.Num() > OutputPins[1].ConnectedPinIndex)
 	{
@@ -117,7 +122,7 @@ FNodeVarArgs USetVariable::GetConnectedPinValue(const FPinStruct& Pin)
 	return Pin.Value.Array[0];
 }
 
-FNodeVarArgsArray USetVariable::GetConnectedPinArray(const FPinStruct& Pin)
+FNodeVarArgsArray USetVariable::GetConnectedPinArray(FPinStruct& Pin)
 {
 	if (BPConstructor->Variables.Num() > OutputPins[1].ConnectedPinIndex)
 	{
@@ -167,10 +172,15 @@ void UGetVariable::ConstructNode(URuntimeBpConstructor * ConstructorClass, int C
 		// Set the variable type and name
 		OutputPins[0].VariableType = ConstructorClass->Variables[OutputPins[0].ConnectedPinIndex].t;
 		OutputPins[0].PinName = ConstructorClass->Variables[OutputPins[0].ConnectedPinIndex].n;
+		if (!OutputPins[0].Value.Array.IsValidIndex(0))
+		{
+			OutputPins[0].Value.Array.SetNum(1);
+			OutputPins[0].Value.Array[0] = ConstructorClass->Variables[OutputPins[0].ConnectedPinIndex].v[0];
+		}
 	}
 }
 
-FNodeVarArgs UGetVariable::GetConnectedPinValue(const FPinStruct& Pin)
+FNodeVarArgs UGetVariable::GetConnectedPinValue(FPinStruct& Pin)
 {
 	if (BPConstructor->Variables.Num() > OutputPins[0].ConnectedPinIndex)
 	{
@@ -180,7 +190,7 @@ FNodeVarArgs UGetVariable::GetConnectedPinValue(const FPinStruct& Pin)
 	return Pin.Value.Array[0];
 }
 
-FNodeVarArgsArray UGetVariable::GetConnectedPinArray(const FPinStruct& Pin)
+FNodeVarArgsArray UGetVariable::GetConnectedPinArray(FPinStruct& Pin)
 {
 	if (BPConstructor->Variables.Num() > OutputPins[0].ConnectedPinIndex)
 	{
@@ -217,11 +227,15 @@ void USetLocalVariable::ConstructNode(URuntimeBpConstructor * ConstructorClass, 
 		InputPins[1].VariableType = ConstructorClass->Functions[OutputPins[1].ConnectedNodeIndex].LocalVariables[OutputPins[1].ConnectedPinIndex].t;
 		InputPins[1].PinName = ConstructorClass->Functions[OutputPins[1].ConnectedNodeIndex].LocalVariables[OutputPins[1].ConnectedPinIndex].n;
 		OutputPins[1].VariableType = ConstructorClass->Functions[OutputPins[1].ConnectedNodeIndex].LocalVariables[OutputPins[1].ConnectedPinIndex].t;
-
+		if (!OutputPins[1].Value.Array.IsValidIndex(0))
+		{
+			OutputPins[1].Value.Array.SetNum(1);
+			OutputPins[1].Value.Array[0] = ConstructorClass->Variables[OutputPins[1].ConnectedPinIndex].v[0];
+		}
 	}
 }
 
-FNodeVarArgs USetLocalVariable::GetConnectedPinValue(const FPinStruct& Pin)
+FNodeVarArgs USetLocalVariable::GetConnectedPinValue(FPinStruct& Pin)
 {
 	if (BPConstructor->Functions[OutputPins[1].ConnectedNodeIndex].LocalVariables.Num() > OutputPins[1].ConnectedPinIndex)
 	{
@@ -231,7 +245,7 @@ FNodeVarArgs USetLocalVariable::GetConnectedPinValue(const FPinStruct& Pin)
 	return Pin.Value.Array[0];
 }
 
-FNodeVarArgsArray USetLocalVariable::GetConnectedPinArray(const FPinStruct& Pin)
+FNodeVarArgsArray USetLocalVariable::GetConnectedPinArray(FPinStruct& Pin)
 {
 	if (BPConstructor->Functions[OutputPins[1].ConnectedNodeIndex].LocalVariables.Num() > OutputPins[1].ConnectedPinIndex)
 	{
@@ -282,10 +296,15 @@ void UGetLocalVariable::ConstructNode(URuntimeBpConstructor * ConstructorClass, 
 		// Set the variable type and name
 		OutputPins[0].VariableType = ConstructorClass->Functions[OutputPins[0].ConnectedNodeIndex].LocalVariables[OutputPins[0].ConnectedPinIndex].t;
 		OutputPins[0].PinName = ConstructorClass->Functions[OutputPins[0].ConnectedNodeIndex].LocalVariables[OutputPins[0].ConnectedPinIndex].n;
+		if (!OutputPins[0].Value.Array.IsValidIndex(0))
+		{
+			OutputPins[0].Value.Array.SetNum(1);
+			OutputPins[0].Value.Array[0] = ConstructorClass->Variables[OutputPins[0].ConnectedPinIndex].v[0];
+		}
 	}
 }
 
-FNodeVarArgs UGetLocalVariable::GetConnectedPinValue(const FPinStruct& Pin)
+FNodeVarArgs UGetLocalVariable::GetConnectedPinValue(FPinStruct& Pin)
 {
 	if (BPConstructor->Functions[OutputPins[0].ConnectedNodeIndex].LocalVariables.Num() > OutputPins[0].ConnectedPinIndex)
 	{
@@ -295,7 +314,7 @@ FNodeVarArgs UGetLocalVariable::GetConnectedPinValue(const FPinStruct& Pin)
 	return Pin.Value.Array[0];
 }
 
-FNodeVarArgsArray UGetLocalVariable::GetConnectedPinArray(const FPinStruct& Pin)
+FNodeVarArgsArray UGetLocalVariable::GetConnectedPinArray(FPinStruct& Pin)
 {
 	if (BPConstructor->Functions[OutputPins[0].ConnectedNodeIndex].LocalVariables.Num() > OutputPins[0].ConnectedPinIndex)
 	{

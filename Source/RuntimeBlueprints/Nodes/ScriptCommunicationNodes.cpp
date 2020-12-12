@@ -152,11 +152,11 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 				Constructor->FunctionNodes[FunctionCallIndex].Nodes[0]->UpdateCustomOutput(this, CalledInputs);
 				
 				// Restore retrieved values back to InputPins
-				int i2 = 4;
+				int i2 = 3;
 				for (FPinStruct& Pin : CalledInputs)
 				{
 					// We skip the first iteration of Called Inputs because it's an exec
-					if (i2 > 4)
+					if (i2 > 3)
 					{
 						InputPins[i2] = Pin;
 					}

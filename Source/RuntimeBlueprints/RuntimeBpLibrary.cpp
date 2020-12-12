@@ -202,9 +202,20 @@ bool URuntimeBpLibrary::GetEnumEntriesFromName(const FString& EnumName, TArray<F
 * FValues functions exposed for BP usage
 */
 
-void URuntimeBpLibrary::ClearNodeVarArgs(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)
+void URuntimeBpLibrary::SetDefaultArg(UPARAM(ref)TArray<FNodeVarArgs>& Values, EVariableTypes VariableType)
+{
+	Values.SetNum(1);
+	Values[0] = FNodeVarArgs(VariableType);
+}
+
+void URuntimeBpLibrary::ClearNodeVarArgs(UPARAM(ref) TArray<FNodeVarArgs>& Values, EVariableTypes VariableType, bool Array)
 {
 	Values.Empty();
+
+	if (!Array)
+	{
+		Values.Add(FNodeVarArgs(VariableType));
+	}
 }
 
 TArray<bool> URuntimeBpLibrary::GetBoolArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)

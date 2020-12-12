@@ -76,7 +76,7 @@ public:
 
 	//static void UpdateRuntimeScriptExternalFunction(TArray<FNodeStruct>& RuntimeNodes, TMap <FString, TArray<FSaveableFunction>> ExternalFunctions)
 
-	static TArray<FNodeVarArgs> JsonValueToScriptValue(TArray<TSharedPtr<FJsonValue>> Value, EVariableTypes VariableType, bool& Success);
+	static TArray<FNodeVarArgs> JsonValueToScriptValue(TArray<TSharedPtr<FJsonValue>> Value, EVariableTypes VariableType, bool Array, bool& Success);
 
 	UFUNCTION(BlueprintCallable, Category = "JSON", meta = (Keywords = "Json String to Script"))
 	static bool JsonStringToScript(const FString& InString, FRuntimeBpJsonFormat& Script, const FString& ThisScriptName, bool LoadExternals);

@@ -233,9 +233,17 @@ UForLoopWithBreak::UForLoopWithBreak()
 
 void UForLoopWithBreak::Execute(int Index, int FromLoopIndex)
 {
-	// If the break exec is called (alla index 3), we stop the loop
+	// If the break exec is called (ala index 3), we stop the loop
 	if (Index == 3)
 	{
+		if (ReceivedFromLoopIndex == -1)
+		{
+			FromLoopIndexFromBreak = FromLoopIndex;
+		}
+		else
+		{
+			FromLoopIndexFromBreak = ReceivedFromLoopIndex;
+		}
 		Break = true;
 		return;
 	}
@@ -248,7 +256,8 @@ void UForLoopWithBreak::Next()
 {
 	if (Break)
 	{
-		Super::Execute(2, ReceivedFromLoopIndex);// On Completed
+		ReceivedFromLoopIndex = FromLoopIndexFromBreak;
+		Super::Execute(2, FromLoopIndexFromBreak);// On Completed
 		return;
 	}
 
