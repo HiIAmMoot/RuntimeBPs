@@ -80,8 +80,13 @@ public:
 	* TArray<FNodeVarArgs> functions exposed for BP usage
 	*/
 
+	// Sets the default value based on the VariableType
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints|Set", Keywords = "Set Node Var Args Default"))
+	static void SetDefaultArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, EVariableTypes VariableType);
+
+	// Sets the variable in the form of a bool
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints", Keywords = "Clear Node Var Args"))
-	static void ClearNodeVarArgs(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array = false);
+	static void ClearNodeVarArgs(UPARAM(ref) TArray<FNodeVarArgs>& Values, EVariableTypes VariableType, bool Array = false);
 
 	// Gets the variable in the form of a bool
 	UFUNCTION(BlueprintPure, meta = (Category = "Runtime Blueprints|Get", Keywords = "Get Node Var Args Bool"))

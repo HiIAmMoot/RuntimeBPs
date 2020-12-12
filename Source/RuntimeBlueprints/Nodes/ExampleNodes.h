@@ -75,7 +75,7 @@ public:
 
 	int LastIndex;
 
-	int ReceivedFromLoopIndex;
+	int ReceivedFromLoopIndex = -1;
 
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 
@@ -84,7 +84,7 @@ public:
 };
 
 UCLASS()
-class RUNTIMEBLUEPRINTS_API UForLoopWithBreak : public URuntimeBpObject
+class RUNTIMEBLUEPRINTS_API UForLoopWithBreak : public UForLoop
 {
 	GENERATED_BODY()
 
@@ -92,13 +92,9 @@ public:
 
 	UForLoopWithBreak();
 
-	int CurrentLoopIndex;
-
-	int LastIndex;
-
-	int ReceivedFromLoopIndex;
-
 	FThreadSafeBool Break;
+
+	int FromLoopIndexFromBreak = -1;
 
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 

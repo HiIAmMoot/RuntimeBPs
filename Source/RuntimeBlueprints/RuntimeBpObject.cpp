@@ -20,16 +20,6 @@ void URuntimeBpObject::ConstructNode(URuntimeBpConstructor * ConstructorClass, i
 	InputPins = ConstructedInputPins;
 	OutputPins = ConstructedOutputPins;
 
-
-	// Init the args for al output pins to avoid crashes when accessing non-pure function outputs that haven't been executed yet
-	for (FPinStruct& OutputPin : OutputPins)
-	{
-		if (!OutputPin.Array)
-		{
-			OutputPin.Value.Array[0] = FNodeVarArgs(OutputPin.VariableType);
-		}
-	}
-
 	// Check if any inputs contain Exec types, if so this node isn't pure
 	for (FPinStruct& InputPin : InputPins)
 	{
@@ -43,13 +33,22 @@ void URuntimeBpObject::ConstructNode(URuntimeBpConstructor * ConstructorClass, i
 	// Check if outputs have any exec if the input didn't have any
 	if (Pure)
 	{
-		for (FPinStruct& InputPin : OutputPins)
+		for (FPinStruct& OutputPin : OutputPins)
 		{
-			if (InputPin.VariableType == EVariableTypes::Exec)
+			if (OutputPin.VariableType == EVariableTypes::Exec)
 			{
 				Pure = false;
 				break;
 			}
+		}
+	}
+
+	// Init the args for al output pins to avoid crashes when accessing non-pure function outputs from nodes that haven't been executed yet
+	for (FPinStruct& OutputPin : OutputPins)
+	{
+		if (!OutputPin.Array)
+		{
+			OutputPin.Value.Array[0] = FNodeVarArgs(OutputPin.VariableType);
 		}
 	}
 }
@@ -174,7 +173,7 @@ void URuntimeBpObject::ClearEditorValues()
 	NodeName = "";
 }
 
-FNodeVarArgs URuntimeBpObject::GetConnectedPinValue(const FPinStruct& Pin)
+FNodeVarArgs URuntimeBpObject::GetConnectedPinValue(FPinStruct& Pin)
 {
 	if (Pin.ConnectedNodeIndex > -1 && BPConstructor != nullptr)
 	{
@@ -192,14 +191,13 @@ FNodeVarArgs URuntimeBpObject::GetConnectedPinValue(const FPinStruct& Pin)
 		// In case the array is empty, we simply return an empty uobject value as dynamic objects should only have this happen. We should never hit this though.
 		if (Pin.Value.Array.Num() == 0)
 		{
-			FNodeVarArgs Args = FNodeVarArgs(Pin.VariableType);
-			return Args;
+			Pin.Value.Array.Add(FNodeVarArgs(Pin.VariableType));
 		}
 		return Pin.Value.Array[0];
 	}
 }
 
-FNodeVarArgsArray URuntimeBpObject::GetConnectedPinArray(const FPinStruct& Pin)
+FNodeVarArgsArray URuntimeBpObject::GetConnectedPinArray(FPinStruct& Pin)
 {
 	if (Pin.ConnectedNodeIndex > -1 && BPConstructor != nullptr)
 	{

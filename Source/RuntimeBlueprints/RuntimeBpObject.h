@@ -83,10 +83,10 @@ public:
 	void ClearEditorValues();
 
 	// Get the single value of the specified pin, only used for non-Execs
-	FORCEINLINE virtual FNodeVarArgs GetConnectedPinValue(const FPinStruct& Pin);
+	FORCEINLINE virtual FNodeVarArgs GetConnectedPinValue(FPinStruct& Pin);
 
 	// Get the array value of the specified pin, only used for non-Execs
-	FORCEINLINE virtual FNodeVarArgsArray GetConnectedPinArray(const FPinStruct& Pin);
+	FORCEINLINE virtual FNodeVarArgsArray GetConnectedPinArray(FPinStruct& Pin);
 
 	// Get the variable this pin is connected to, if applicable. This is used for setting variables by ref
 	FSaveableVariable& GetConnectedVariableRef(const FPinStruct& Pin);
@@ -94,8 +94,8 @@ public:
 	// Executes an event based on the index of the pin
 	FORCEINLINE virtual void Execute(int Index, int FromLoopIndex = -1);
 
-	// Executes the next event the specified (output) pin index is connected to
-	FORCEINLINE void Then(int Index, int FromLoopIndex);
+	// Executes the next event the specified (output) pin index is connected to, should only be overwritten for (external) function call nodes
+	FORCEINLINE virtual void Then(int Index, int FromLoopIndex);
 
 	// Function for loops to trigger the next iteration
 	virtual void Next();

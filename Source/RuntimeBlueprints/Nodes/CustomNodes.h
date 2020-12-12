@@ -18,8 +18,13 @@ class RUNTIMEBLUEPRINTS_API UCallFunction : public URuntimeBpObject
 public:
 
 	UCallFunction();
- 
+
+	// We manually store the FromLoopIndex before a function call because it's lost when a function is called. This is used in the overridden Then function
+	int StoredFromLoopIndex;
+
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
+
+	virtual void Then(int Index, int FromLoopIndex) override;
 
 };
 
@@ -63,9 +68,9 @@ public:
 	// Called when the constructor constructs the BP nodes
 	virtual void ConstructNode(URuntimeBpConstructor * ConstructorClass, int ConstructedNodeIndex, const FString& ConstructedNodeName, UPARAM(ref) TArray<FPinStruct>& ConstructedInputPins, UPARAM(ref) TArray<FPinStruct>& ConstructedOutputPins) override;
 
-	virtual FNodeVarArgs GetConnectedPinValue(const FPinStruct& Pin) override;
+	virtual FNodeVarArgs GetConnectedPinValue(FPinStruct& Pin) override;
 	
-	virtual FNodeVarArgsArray GetConnectedPinArray(const FPinStruct& Pin) override;
+	virtual FNodeVarArgsArray GetConnectedPinArray(FPinStruct& Pin) override;
 
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 
@@ -86,9 +91,9 @@ public:
 	// Called when the constructor constructs the BP nodes
 	virtual void ConstructNode(URuntimeBpConstructor * ConstructorClass, int ConstructedNodeIndex, const FString& ConstructedNodeName, UPARAM(ref) TArray<FPinStruct>& ConstructedInputPins, UPARAM(ref) TArray<FPinStruct>& ConstructedOutputPins) override;
 	
-	virtual FNodeVarArgs GetConnectedPinValue(const FPinStruct& Pin) override;
+	virtual FNodeVarArgs GetConnectedPinValue(FPinStruct& Pin) override;
 	
-	virtual FNodeVarArgsArray GetConnectedPinArray(const FPinStruct& Pin) override;
+	virtual FNodeVarArgsArray GetConnectedPinArray(FPinStruct& Pin) override;
 
 };
 
@@ -107,9 +112,9 @@ public:
 	// Called when the constructor constructs the BP nodes
 	virtual void ConstructNode(URuntimeBpConstructor * ConstructorClass, int ConstructedNodeIndex, const FString& ConstructedNodeName, UPARAM(ref) TArray<FPinStruct>& ConstructedInputPins, UPARAM(ref) TArray<FPinStruct>& ConstructedOutputPins) override;
 
-	virtual FNodeVarArgs GetConnectedPinValue(const FPinStruct& Pin) override;
+	virtual FNodeVarArgs GetConnectedPinValue(FPinStruct& Pin) override;
 
-	virtual FNodeVarArgsArray GetConnectedPinArray(const FPinStruct& Pin) override;
+	virtual FNodeVarArgsArray GetConnectedPinArray(FPinStruct& Pin) override;
 
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 
@@ -130,8 +135,8 @@ public:
 	// Called when the constructor constructs the BP nodes
 	virtual void ConstructNode(URuntimeBpConstructor * ConstructorClass, int ConstructedNodeIndex, const FString& ConstructedNodeName, UPARAM(ref) TArray<FPinStruct>& ConstructedInputPins, UPARAM(ref) TArray<FPinStruct>& ConstructedOutputPins) override;
 
-	virtual FNodeVarArgs GetConnectedPinValue(const FPinStruct& Pin) override;
+	virtual FNodeVarArgs GetConnectedPinValue(FPinStruct& Pin) override;
 
-	virtual FNodeVarArgsArray GetConnectedPinArray(const FPinStruct& Pin) override;
+	virtual FNodeVarArgsArray GetConnectedPinArray(FPinStruct& Pin) override;
 
 };
