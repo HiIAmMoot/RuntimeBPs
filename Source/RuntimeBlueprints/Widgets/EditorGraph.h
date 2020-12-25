@@ -19,42 +19,50 @@ class RUNTIMEBLUEPRINTS_API UEditorGraph : public UUserWidget
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Nodes", Keywords = "Nodes Array"))
+	// All Nodes
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Editor", Keywords = "Nodes Array"))
 	TArray<FNodeStruct> Nodes;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Variables", Keywords = "Variables Array"))
+	// All Variables
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Editor", Keywords = "Variables Array"))
 	TArray<FSaveableVariable> Variables;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Variables", Keywords = "Custom Functions CustomFunctions Array"))
+	// All Functions
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Editor", Keywords = "Custom Functions CustomFunctions Array"))
 	TArray<FRuntimeFunction> CustomFunctions;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Variables", Keywords = "Script References ScriptReferences Array"))
+	// All Script References
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Editor", Keywords = "Script References ScriptReferences Array"))
 	TArray<FString> ScriptReferences;
+
+	// Set of nodes that are erroring, if this isn't empty the script won't execute. X = FunctionIndex, Y = NodeIndex, Z = PinIndex
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Values|Editor", Keywords = "Erroring Nodes Set Error"))
+	TSet<FIntVector4D> ErroringNodes;
 
 public:
 
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Clear Node Struct Array"))
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Clear Node Struct Array"))
 	void ClearNodeStructArray();
 
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Add Node Struct to Array"))
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Add Node Struct to Array"))
 	void AddNodeStructToArray(FVector2D NodeCoords, TArray<FPinStruct> InputPins, TArray<FPinStruct> OutputPins, int NodeIndex, TSubclassOf<URuntimeBpObject> NodeClass);
 
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Variables", Keywords = "Add Variable Added Duplicate"))
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Add Variable Added Duplicate"))
 	int AddVariable();
 
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Variables", Keywords = "Add Variable Added Duplicate"))
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Add Variable Added Duplicate"))
 	int AddLocalVariable(int FunctionIndex);
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (Category = "Runtime Values|Variables", Keywords = "On Variable Added"))
+	UFUNCTION(BlueprintImplementableEvent, meta = (Category = "Runtime Values|Editor", Keywords = "On Variable Added"))
 	void OnVariableAdded(UPARAM(ref) FSaveableVariable& Variable);
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (Category = "Runtime Values|Variables", Keywords = "On Variable Added"))
+	UFUNCTION(BlueprintImplementableEvent, meta = (Category = "Runtime Values|Editor", Keywords = "On Variable Added"))
 	void OnLocalVariableAdded(int FunctionIndex, UPARAM(ref) FSaveableVariable& Variable);
 
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Functions", Keywords = "Add Function Added Duplicate"))
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Add Function Added Duplicate"))
 	int AddFunction();
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (Category = "Runtime Values|Functions", Keywords = "On Function Added"))
+	UFUNCTION(BlueprintImplementableEvent, meta = (Category = "Runtime Values|Editor", Keywords = "On Function Added"))
 	void OnFunctionAdded(UPARAM(ref) FRuntimeFunction& Variable);
 
 	// Converts the union value struct into a saveable struct
@@ -74,11 +82,11 @@ public:
 	// Void TurnSaveableStructsToNodeStructs(UPARAM(ref) TArray<FConvertedNode>& SaveableStuctArray);
 	
 	// Turns the pin value into a string to show in the editor graph
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Values to String"))
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Values to String"))
 	FString ValueToString(UPARAM(ref) TArray<FNodeVarArgs>& Values, EVariableTypes VariableType, bool Array);
 
 	// Turns the pin value into a Json format for saving
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Pin Value to Json"))
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Pin Value to Json"))
 	FString PinValueToJson(UPARAM(ref) FPinStruct& NodePin);
 
 	/*
@@ -88,6 +96,6 @@ public:
 	template<typename StructType>
 	void DeserializeUnion(const TArray<uint8>& Storage, const StructType& Struct);*/
 
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values", Keywords = "Duplicate Editor Graph"))
+	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Duplicate Editor Graph"))
 	void DuplicateEditorGraph(UEditorGraph* OutEditorGraph);
 };

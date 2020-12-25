@@ -80,4 +80,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "JSON", meta = (Keywords = "Json String to Script"))
 	static bool JsonStringToScript(const FString& InString, FRuntimeBpJsonFormat& Script, const FString& ThisScriptName, bool LoadExternals);
+
+	// Get the pin pin connected to this pin, returns the node index and the pin index
+	static FIntPoint FindPinsConnectedToPin(const FPinStruct& Pin);
 };

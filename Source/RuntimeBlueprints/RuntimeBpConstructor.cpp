@@ -109,13 +109,20 @@ bool FMultiThreadScript::IsThreadFinished()
 //***********************************************************
 // The actual script constructor class
 //***********************************************************
-void URuntimeBpConstructor::InitScript(const FString& ScriptName, UPARAM(ref)TArray<FNodeStruct>& InNodes, UPARAM(ref)TArray<FSaveableVariable>& InVariables, UPARAM(ref)TArray<FRuntimeFunction>& InFunctions, UPARAM(ref)TArray<FString>& InReferences, bool Multithread)
+void URuntimeBpConstructor::InitScript(const FString& ScriptName, UPARAM(ref) FRuntimeBpJsonFormat& Script, bool Multithread)
 {
+	// Script won't be run if there are errors.
+	if (Script.ErroringNodes.Num() > 0)
+	{
+		this->DestroyComponent();
+		return;
+	}
+
 	JsonFile = ScriptName;
-	NodeStructs = InNodes;
-	Variables = InVariables;
-	Functions = InFunctions;
-	ScriptReferences = InReferences;
+	NodeStructs = Script.Nodes;
+	Variables = Script.Variables;
+	Functions = Script.Functions;
+	ScriptReferences = Script.References;
 
 	ConstructBPNodes(NodeStructs, Multithread);
 
@@ -130,7 +137,7 @@ void URuntimeBpConstructor::InitScriptFromSave(const FString& ScriptName, bool M
 	FRuntimeBpJsonFormat RuntimeBpJson;
 	if (URuntimeBpConstructor::FindLoadedScript(ScriptName, RuntimeBpJson))
 	{
-		InitScript(ScriptName, RuntimeBpJson.Nodes, RuntimeBpJson.Variables, RuntimeBpJson.Functions, RuntimeBpJson.References, Multithread);
+		InitScript(ScriptName, RuntimeBpJson, Multithread);
 	}
 }
 

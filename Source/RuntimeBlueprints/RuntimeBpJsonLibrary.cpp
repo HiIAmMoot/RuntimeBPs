@@ -878,6 +878,8 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 	// We get the array which contains the nodes and loop through
 	if (JsonObject->TryGetArrayField(NodeArrayFieldName, NodeArray))
 	{
+		auto& Nodes = Script.Nodes;
+
 		int NodeIndex = 0;
 		for (TSharedPtr<FJsonValue> Node : *NodeArray)
 		{
@@ -898,11 +900,73 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 					// We should be in the Input pin struct now and can set the value
 					if (Input->TryGetObject(InputObject) && InputObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 					{
-						EVariableTypes VariableType = Script.Nodes[NodeIndex].InputPins[InputIndex].VariableType;
-						bool Array = Script.Nodes[NodeIndex].InputPins[InputIndex].Array;
-						Script.Nodes[NodeIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
+						FPinStruct& InputPin = Nodes[NodeIndex].InputPins[InputIndex];
+						EVariableTypes VariableType = InputPin.VariableType;
+						bool Array = InputPin.Array;
+
+						// Syntax check for input pins
+						FIntPoint ReferencedPinInfo = FindPinsConnectedToPin(InputPin);
+						if (ReferencedPinInfo.X > -1 && ReferencedPinInfo.Y > -1)
+						{
+							if (Nodes.IsValidIndex(ReferencedPinInfo.X) && Nodes[ReferencedPinInfo.X].OutputPins.IsValidIndex(ReferencedPinInfo.Y))
+							{
+								const FPinStruct& ConnectedPin = Nodes[ReferencedPinInfo.X].OutputPins[ReferencedPinInfo.Y];
+								if (VariableType != ConnectedPin.VariableType || Array != ConnectedPin.Array)
+								{
+									Script.ErroringNodes.Add(FIntVector4D(-1, NodeIndex, InputIndex, 1));
+									Script.ErroringNodes.Add(FIntVector4D(-1, ReferencedPinInfo.X, ReferencedPinInfo.Y, 0));
+								}
+							}
+							else
+							{
+								Script.ErroringNodes.Add(FIntVector4D(-1, NodeIndex, InputIndex, 1));
+							}
+
+						}
+
+						InputPin.Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 					}
 					InputIndex++;
+				}
+
+				// Syntax check for output pins
+				InputIndex = 0;
+				for (const FPinStruct& OutputPin : Nodes[NodeIndex].OutputPins)
+				{
+					FIntPoint ReferencedPinInfo = FindPinsConnectedToPin(OutputPin);
+					EVariableTypes VariableType = OutputPin.VariableType;
+					bool Array = OutputPin.Array;
+					if (ReferencedPinInfo.X > -1 && ReferencedPinInfo.Y > -1)
+					{
+						if (Nodes.IsValidIndex(ReferencedPinInfo.X) && Nodes[ReferencedPinInfo.X].InputPins.IsValidIndex(ReferencedPinInfo.Y))
+						{
+							const FPinStruct& ConnectedPin = Nodes[ReferencedPinInfo.X].InputPins[ReferencedPinInfo.Y];
+							if (VariableType != ConnectedPin.VariableType || Array != ConnectedPin.Array)
+							{
+								Script.ErroringNodes.Add(FIntVector4D(-1, NodeIndex, InputIndex, 0));
+								Script.ErroringNodes.Add(FIntVector4D(-1, ReferencedPinInfo.X, ReferencedPinInfo.Y, 1));
+							}
+						}
+						else
+						{
+							Script.ErroringNodes.Add(FIntVector4D(-1, NodeIndex, InputIndex, 0));
+						}
+					}
+
+
+					InputIndex++;
+				}
+
+				// If for whatever reason there are more pins than saved values, for example when a node changes its default inputs
+				// We reset the inputs to prevent crashing
+				for (int i = InputIndex; i < Nodes[NodeIndex].InputPins.Num(); i++)
+				{
+					FPinStruct& InputPin = Nodes[NodeIndex].InputPins[i];
+					if (!InputPin.Array)
+					{
+						InputPin.Value.Array.SetNum(1);
+						InputPin.Value.Array[0] = FNodeVarArgs(InputPin.VariableType);
+					}
 				}
 			}
 			NodeIndex++;
@@ -931,7 +995,6 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 			}
 		}
 
-
 		// Functions
 		FunctionArray = nullptr;
 		if (JsonObject->TryGetArrayField(FunctionArrayFieldName, FunctionArray))
@@ -944,6 +1007,8 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 				const TArray<TSharedPtr<FJsonValue>>* FunctionNodeArray;
 				if (Function->TryGetObject(FunctionObject) && FunctionObject->Get()->TryGetArrayField(FunctionNodeFieldName, FunctionNodeArray))
 				{
+					auto& FunctionNodes = Script.Functions[FunctionIndex].Nodes;
+
 					NodeIndex = 0;
 					for (TSharedPtr<FJsonValue> Node : *FunctionNodeArray)
 					{
@@ -957,29 +1022,90 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 							for (TSharedPtr<FJsonValue> Input : *InputArray)
 							{
 								bool Success = false;
-								int InputLength = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins.Num();
+								int InputLength = FunctionNodes[NodeIndex].InputPins.Num();
 								if (!(InputIndex < InputLength))
 								{
+									Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 1));
 									UE_LOG(LogJson, Warning, TEXT("Warning: Looped with an InputIndex of %i with an array length of %i. This is coming from %s."), InputIndex, InputLength, *Script.Functions[FunctionIndex].FunctionName);
 									UE_LOG(LogJson, Warning, TEXT("FunctionIndex: %s, Length: %s"), *FString::FromInt(FunctionIndex), *FString::FromInt(Script.Functions.Num()));
-									UE_LOG(LogJson, Warning, TEXT("NodeIndex: %s, Length: %s"), *FString::FromInt(NodeIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes.Num()));
-									UE_LOG(LogJson, Warning, TEXT("InputIndex: %s, Length: %s"), *FString::FromInt(InputIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins.Num()));
+									UE_LOG(LogJson, Warning, TEXT("NodeIndex: %s, Length: %s"), *FString::FromInt(NodeIndex), *FString::FromInt(FunctionNodes.Num()));
+									UE_LOG(LogJson, Warning, TEXT("InputIndex: %s, Length: %s"), *FString::FromInt(InputIndex), *FString::FromInt(FunctionNodes[NodeIndex].InputPins.Num()));
 									break;
 								}
 								const TSharedPtr<FJsonObject>* InputObject;
 								const TArray<TSharedPtr<FJsonValue>>* ValueArray;
-								// UE_LOG(LogJson, Warning, TEXT("----------------"));
-								// UE_LOG(LogJson, Warning, TEXT("FunctionIndex: %s, Length: %s"), *FString::FromInt(FunctionIndex), *FString::FromInt(Script.Functions.Num()));
-								// UE_LOG(LogJson, Warning, TEXT("NodeIndex: %s, Length: %s"), *FString::FromInt(NodeIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes.Num()));
-								// UE_LOG(LogJson, Warning, TEXT("InputIndex: %s, Length: %s"), *FString::FromInt(InputIndex), *FString::FromInt(Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins.Num()));
+
 								// We should be in the Input pin struct now and can set the value
 								if (Input->TryGetObject(InputObject) && InputObject->Get()->TryGetArrayField(ValueFieldName, ValueArray))
 								{
-									EVariableTypes VariableType = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].VariableType;
-									bool Array = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].Array;
-									Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex].Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
+									FPinStruct& InputPin = FunctionNodes[NodeIndex].InputPins[InputIndex];
+									EVariableTypes VariableType = InputPin.VariableType;
+									bool Array = InputPin.Array;
+
+									// Syntax check for input pins
+									FIntPoint ReferencedPinInfo = FindPinsConnectedToPin(InputPin);
+									if (ReferencedPinInfo.X > -1 && ReferencedPinInfo.Y > -1)
+									{
+										if (FunctionNodes.IsValidIndex(ReferencedPinInfo.X) && FunctionNodes[ReferencedPinInfo.X].OutputPins.IsValidIndex(ReferencedPinInfo.Y))
+										{
+											const FPinStruct& ConnectedPin = FunctionNodes[ReferencedPinInfo.X].OutputPins[ReferencedPinInfo.Y];
+											if (VariableType != ConnectedPin.VariableType || Array != ConnectedPin.Array)
+											{
+												Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 1));
+												Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, ReferencedPinInfo.X, ReferencedPinInfo.Y, 0));
+											}
+										}
+										else
+										{
+											//UE_LOG(LogJson, Warning, TEXT("Bad output -  Functionindex: %i, NodeIndex: %i, PinIndex: %i, Input: false"), FunctionIndex, NodeIndex, InputIndex);
+											//UE_LOG(LogJson, Warning, TEXT("Referenced pin info - NodeIndex %i, PinIndex %i"), ReferencedPinInfo.X, ReferencedPinInfo.Y);
+											Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 1));
+										}
+									}
+
+
+									InputPin.Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 								}
 								InputIndex++;
+							}
+
+							// Syntax check for output pins
+							InputIndex = 0;
+							for (const FPinStruct& OutputPin : FunctionNodes[NodeIndex].OutputPins)
+							{
+								FIntPoint ReferencedPinInfo = FindPinsConnectedToPin(OutputPin);
+								EVariableTypes VariableType = OutputPin.VariableType;
+								bool Array = OutputPin.Array;
+
+								if (ReferencedPinInfo.X > -1 && ReferencedPinInfo.Y > -1)
+								{
+									if (FunctionNodes.IsValidIndex(ReferencedPinInfo.X) && FunctionNodes[ReferencedPinInfo.X].InputPins.IsValidIndex(ReferencedPinInfo.Y))
+									{
+										const FPinStruct& ConnectedPin = FunctionNodes[ReferencedPinInfo.X].InputPins[ReferencedPinInfo.Y];
+										if (VariableType != ConnectedPin.VariableType || Array != ConnectedPin.Array)
+										{
+											Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 0));
+											Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, ReferencedPinInfo.X, ReferencedPinInfo.Y, 1));
+										}
+									}
+									else
+									{
+										Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 0));
+									}
+								}
+		
+								InputIndex++;
+							}
+
+							// If for whatever reason there are more pins than saved values, for example when a node changes its default inputs
+							for (int i = InputIndex; i < FunctionNodes[NodeIndex].InputPins.Num(); i++)
+							{
+								FPinStruct& InputPin = FunctionNodes[NodeIndex].InputPins[i];
+								if (!InputPin.Array)
+								{
+									InputPin.Value.Array.SetNum(1);
+									InputPin.Value.Array[0] = FNodeVarArgs(InputPin.VariableType);
+								}
 							}
 						}
 						NodeIndex++;
@@ -1035,4 +1161,37 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 		}
 	}
 	return true;
+}
+
+FIntPoint URuntimeBpJsonLibrary::FindPinsConnectedToPin(const FPinStruct& Pin)
+{
+	if (Pin.VariableType == EVariableTypes::Exec)
+	{
+		if (!Pin.Input)
+		{
+			return FIntPoint(Pin.ConnectedNodeIndex, Pin.ConnectedPinIndex);
+		}
+	}
+	else
+	{
+		if (Pin.Input)
+		{
+			return FIntPoint(Pin.ConnectedNodeIndex, Pin.ConnectedPinIndex);
+		}
+	}
+
+	return FIntPoint(-1, -1);
+
+	/*if (VariableType != EVariableTypes::Exec && Input)
+	{
+
+	}
+
+	for (const FNodeStruct& Node : Nodes)
+	{
+
+	}
+
+	return TArray<FIntPoint>();*/
+	// TODO: insert return statement here
 }

@@ -175,15 +175,14 @@ void URuntimeBpObject::ClearEditorValues()
 
 FNodeVarArgs URuntimeBpObject::GetConnectedPinValue(FPinStruct& Pin)
 {
-	if (Pin.ConnectedNodeIndex > -1 && BPConstructor != nullptr)
+	if (Pin.ConnectedNodeIndex > -1)
 	{
 		URuntimeBpObject* ConnectedNode = GetNodeFamily()[Pin.ConnectedNodeIndex];
 		if (ConnectedNode->Pure)
 		{
 			ConnectedNode->Execute(0);
 		}
-		FPinStruct ConnectedPin = ConnectedNode->OutputPins[Pin.ConnectedPinIndex];
-		return ConnectedNode->GetConnectedPinValue(ConnectedPin);
+		return ConnectedNode->GetConnectedPinValue(ConnectedNode->OutputPins[Pin.ConnectedPinIndex]);
 	}
 	// If constructor is invalid or node index is -1(which means it's not connected to anything), use the default value of this pin.
 	else
@@ -199,20 +198,19 @@ FNodeVarArgs URuntimeBpObject::GetConnectedPinValue(FPinStruct& Pin)
 
 FNodeVarArgsArray URuntimeBpObject::GetConnectedPinArray(FPinStruct& Pin)
 {
-	if (Pin.ConnectedNodeIndex > -1 && BPConstructor != nullptr)
+	if (Pin.ConnectedNodeIndex > -1)
 	{
 		URuntimeBpObject* ConnectedNode = GetNodeFamily()[Pin.ConnectedNodeIndex];
 		if (ConnectedNode->Pure)
 		{
 			ConnectedNode->Execute(0);
 		}
-		FPinStruct ConnectedPin = ConnectedNode->OutputPins[Pin.ConnectedPinIndex];
-		return ConnectedNode->GetConnectedPinArray(ConnectedPin);
+		return ConnectedNode->GetConnectedPinArray(ConnectedNode->OutputPins[Pin.ConnectedPinIndex]);
 	}
 	else
 	{
 		// If constructor is invalid or node index is -1(which means it's not connected to anything), use the default value of this pin.
-		return FNodeVarArgsArray(Pin.Value);
+		return Pin.Value;
 	}
 }
 

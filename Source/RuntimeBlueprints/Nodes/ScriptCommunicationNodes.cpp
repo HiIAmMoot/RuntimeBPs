@@ -110,7 +110,7 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 				{
 					Constructor = NewObject<URuntimeBpConstructor>(Actor);
 					Constructor->RegisterComponent();
-					Constructor->InitScriptFromSave(ScriptName);
+					Constructor->InitScriptFromSave(ScriptName, true);
 					Continue = true;
 
 					//URuntimeBpConstructor::Thread->ContinueExecute(BPConstructor, NodeIndex, 0, FromLoopIndex, FunctionIndex);
@@ -125,7 +125,7 @@ void UCallFunctionFromScript::Execute(int Index, int FromLoopIndex)
 			{
 				Constructor = NewObject<URuntimeBpConstructor>(Actor);
 				Constructor->RegisterComponent();
-				Constructor->InitScriptFromSave(ScriptName);
+				Constructor->InitScriptFromSave(ScriptName, false);
 			}
 		}
 
