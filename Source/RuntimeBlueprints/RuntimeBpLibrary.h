@@ -368,7 +368,7 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints|Saving", Keywords = "Convert Saveable Value to Json"))
 	static FString SaveableValueToJson(FSaveableProperty SaveableValue, EVariableTypes VariableType, int Indent, bool PrettyPrint);
 
-	static bool GenericArray_SortCompare(const UProperty* LeftProperty, void* LeftValuePtr, const UProperty* RightProperty, void* RightValuePtr);
+	static bool GenericArray_SortCompare(const FProperty* LeftProperty, void* LeftValuePtr, const FProperty* RightProperty, void* RightValuePtr);
 
 	/**
 	 *	Sort the elements of an array by FString, FName, FText, float, int or boolean.
@@ -382,14 +382,14 @@ public:
 	UFUNCTION(BlueprintCallable, CustomThunk, Meta = (Category = "Utilities|Array", DisplayName = "Sort", ArrayParm = "TargetArray", AdvancedDisplay = "bAscendingOrder,VariableName"))
 	static void Array_Sort(const TArray<int32>& TargetArray, bool bAscendingOrder = true, FName VariableName = NAME_None);
 
-	static void GenericArray_Sort(void* TargetArray, const UArrayProperty* ArrayProp, bool bAscendingOrder = true, FName VariableName = NAME_None);
+	static void GenericArray_Sort(void* TargetArray, const FArrayProperty* ArrayProp, bool bAscendingOrder = true, FName VariableName = NAME_None);
 
 	DECLARE_FUNCTION(execArray_Sort)
 	{
 		Stack.MostRecentProperty = nullptr;
-		Stack.StepCompiledIn<UArrayProperty>(NULL);
+		Stack.StepCompiledIn<FArrayProperty>(NULL);
 		void* ArrayAddr = Stack.MostRecentPropertyAddress;
-		UArrayProperty* ArrayProperty = Cast<UArrayProperty>(Stack.MostRecentProperty);
+		FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Stack.MostRecentProperty);
 		if (!ArrayProperty)
 		{
 			Stack.bArrayContextFailed = true;
@@ -398,7 +398,7 @@ public:
 
 		P_GET_UBOOL(bAscendingOrder);
 
-		P_GET_PROPERTY(UNameProperty, VariableName);
+		P_GET_PROPERTY(FNameProperty, VariableName);
 
 		P_FINISH;
 		P_NATIVE_BEGIN;

@@ -29,7 +29,7 @@ public:
 	* @param PrettyPrint determines wether to use Pretty Print for the string
 	*/
 	UFUNCTION(BlueprintCallable, Category = "JSON", CustomThunk, meta = (CustomStructureParam = "AnyStruct", Keywords = "Any Struct to Json String"))
-	static FString StructToJson(UProperty* AnyStruct, int Indent, bool PrettyPrint);
+	static FString StructToJson(const int32& AnyStruct, int Indent, bool PrettyPrint);
 
 	DECLARE_FUNCTION(execStructToJson)
 	{
@@ -38,15 +38,15 @@ public:
 
 		// Grab the last property found when we walked the stack
 		// This does not contains the property value, only its type information
-		UStructProperty* StructProperty = ExactCast<UStructProperty>(Stack.MostRecentProperty);
+		FStructProperty* StructProperty = ExactCastField<FStructProperty>(Stack.MostRecentProperty);
 
 		// Grab the base address where the struct actually stores its data
 		// This is where the property value is truly stored
 		void* StructPtr = Stack.MostRecentPropertyAddress;
 
 		// Get the input param options
-		P_GET_PROPERTY(UIntProperty, Indent);
-		P_GET_PROPERTY(UBoolProperty, PrettyPrint);
+		P_GET_PROPERTY(FIntProperty, Indent);
+		P_GET_PROPERTY(FBoolProperty, PrettyPrint);
 
 		// We need this to wrap up the stack
 		P_FINISH;
