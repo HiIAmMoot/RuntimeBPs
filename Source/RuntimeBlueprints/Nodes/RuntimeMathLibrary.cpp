@@ -4369,16 +4369,14 @@ UBreakVector::UBreakVector()
 	NodeDescription = "Breaks a vector apart into X, Y, Z";
 	NodeCategory = "Math|Vector";
 	
-	InputPins.SetNum(2); 
-	InputPins[0].MakeNodePin();// No args means execute
-	InputPins[1].MakeNodePin("In Vec", EVariableTypes::Vector);// PinName + PinType
-	InputPins[1].Value.Array[0].SetVectorArg(); // Default value
+	InputPins.SetNum(1); 
+	InputPins[0].MakeNodePin("In Vec", EVariableTypes::Vector);// PinName + PinType
+	InputPins[0].Value.Array[0].SetVectorArg(); // Default value
 
-	OutputPins.SetNum(4);
-	OutputPins[0].MakeNodePin("Then");// Output exec pin    
-    OutputPins[1].MakeNodePin("X", EVariableTypes::Float);// PinName + PinType    
-    OutputPins[2].MakeNodePin("Y", EVariableTypes::Float);// PinName + PinType    
-    OutputPins[3].MakeNodePin("Z", EVariableTypes::Float);// PinName + PinType
+	OutputPins.SetNum(3);
+    OutputPins[0].MakeNodePin("X", EVariableTypes::Float);// PinName + PinType    
+    OutputPins[1].MakeNodePin("Y", EVariableTypes::Float);// PinName + PinType    
+    OutputPins[2].MakeNodePin("Z", EVariableTypes::Float);// PinName + PinType
 }
 
 
@@ -4387,11 +4385,11 @@ void UBreakVector::Execute(int Index, int FromLoopIndex)
     float X;
 	float Y;
 	float Z;
-	UKismetMathLibrary::BreakVector(GetConnectedPinValue(InputPins[1]).GetVectorArg(), X, Y, Z);
+	UKismetMathLibrary::BreakVector(GetConnectedPinValue(InputPins[0]).GetVectorArg(), X, Y, Z);
     
-	OutputPins[1].Value.Array[0].SetFloatArg(X);
-	OutputPins[2].Value.Array[0].SetFloatArg(Y);
-	OutputPins[3].Value.Array[0].SetFloatArg(Z);
+	OutputPins[0].Value.Array[0].SetFloatArg(X);
+	OutputPins[1].Value.Array[0].SetFloatArg(Y);
+	OutputPins[2].Value.Array[0].SetFloatArg(Z);
 
 	Super::Execute(0, FromLoopIndex);// Index here is the array index
 }

@@ -227,7 +227,7 @@ public:
 	static bool FindLoadedScript(const FString& ScriptName, FRuntimeBpJsonFormat& Script, bool LoadIfNotFound = true);
 	
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Init Script"))
-	void InitScript(const FString& ScriptName, UPARAM(ref) TArray<FNodeStruct>& InNodes, UPARAM(ref) TArray<FSaveableVariable>& InVariables, UPARAM(ref) TArray<FRuntimeFunction>& InFunctions, UPARAM(ref)TArray<FString>& InReferences, bool Multithread = true);
+	void InitScript(const FString& ScriptName, UPARAM(ref) FRuntimeBpJsonFormat& Script, bool Multithread = true);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Nodes", Keywords = "Init Script from Save"))
 	void InitScriptFromSave(const FString& ScriptName, bool Multithread = true);

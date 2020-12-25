@@ -1517,13 +1517,17 @@ struct FRuntimeBpJsonFormat
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FSaveableVariable> Variables;
 
-	// All Variables
+	// All Functions
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FRuntimeFunction> Functions;
 
 	// All Script References
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FString> References;
+
+	// Set of nodes that are erroring, if this isn't empty the script won't execute. X = FunctionIndex, Y = NodeIndex, Z = PinIndex, W = 0 if output, 1 if input
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<FIntVector4D> ErroringNodes;
 
 	FRuntimeBpJsonFormat()
 	{}
