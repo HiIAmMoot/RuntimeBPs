@@ -82,7 +82,7 @@ bool URuntimeBpJsonLibrary::ScriptToJsonObject(const FRuntimeBpJsonFormat& Scrip
 						// We should be in the Input pin struct now and can set the value
 						if (Input->TryGetObject(InputObject))
 						{
-							FPinStruct Pin = Script.Nodes[NodeIndex].InputPins[InputIndex];
+							const FPinStruct& Pin = Script.Nodes[NodeIndex].InputPins[InputIndex];
 							TArray<TSharedPtr<FJsonValue>> ArrayField = TArray<TSharedPtr<FJsonValue>>();
 							bool Success = true;
 							if (!Pin.Array)
@@ -147,7 +147,7 @@ bool URuntimeBpJsonLibrary::ScriptToJsonObject(const FRuntimeBpJsonFormat& Scrip
 								// We should be in the Input pin struct now and can set the value
 								if (Input->TryGetObject(InputObject))
 								{
-									FPinStruct Pin = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex];
+									const FPinStruct& Pin = Script.Functions[FunctionIndex].Nodes[NodeIndex].InputPins[InputIndex];
 									TArray<TSharedPtr<FJsonValue>> ArrayField = TArray<TSharedPtr<FJsonValue>>();
 									bool Success = true;
 									if (!Pin.Array)
@@ -878,7 +878,7 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 	// We get the array which contains the nodes and loop through
 	if (JsonObject->TryGetArrayField(NodeArrayFieldName, NodeArray))
 	{
-		auto& Nodes = Script.Nodes;
+		TArray<FNodeStruct>& Nodes = Script.Nodes;
 
 		int NodeIndex = 0;
 		for (TSharedPtr<FJsonValue> Node : *NodeArray)
@@ -904,6 +904,8 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 						EVariableTypes VariableType = InputPin.VariableType;
 						bool Array = InputPin.Array;
 
+						InputPin.Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
+
 						// Syntax check for input pins
 						FIntPoint ReferencedPinInfo = FindPinsConnectedToPin(InputPin);
 						if (ReferencedPinInfo.X > -1 && ReferencedPinInfo.Y > -1)
@@ -923,10 +925,20 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 							}
 
 						}
-
-						InputPin.Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 					}
 					InputIndex++;
+				}
+
+				// If for whatever reason there are more pins than saved values, for example when a node changes its default inputs
+				// We reset the inputs to prevent crashing
+				for (int i = InputIndex; i < Nodes[NodeIndex].InputPins.Num(); i++)
+				{
+					FPinStruct& Pin = Nodes[NodeIndex].InputPins[i];
+					if (!Pin.Array)
+					{
+						Pin.Value.Array.SetNum(1);
+						Pin.Value.Array[0] = FNodeVarArgs(Pin.VariableType);
+					}
 				}
 
 				// Syntax check for output pins
@@ -952,21 +964,7 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 							Script.ErroringNodes.Add(FIntVector4D(-1, NodeIndex, InputIndex, 0));
 						}
 					}
-
-
 					InputIndex++;
-				}
-
-				// If for whatever reason there are more pins than saved values, for example when a node changes its default inputs
-				// We reset the inputs to prevent crashing
-				for (int i = InputIndex; i < Nodes[NodeIndex].InputPins.Num(); i++)
-				{
-					FPinStruct& InputPin = Nodes[NodeIndex].InputPins[i];
-					if (!InputPin.Array)
-					{
-						InputPin.Value.Array.SetNum(1);
-						InputPin.Value.Array[0] = FNodeVarArgs(InputPin.VariableType);
-					}
 				}
 			}
 			NodeIndex++;
@@ -1007,7 +1005,7 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 				const TArray<TSharedPtr<FJsonValue>>* FunctionNodeArray;
 				if (Function->TryGetObject(FunctionObject) && FunctionObject->Get()->TryGetArrayField(FunctionNodeFieldName, FunctionNodeArray))
 				{
-					auto& FunctionNodes = Script.Functions[FunctionIndex].Nodes;
+					TArray<FNodeStruct>& FunctionNodes = Script.Functions[FunctionIndex].Nodes;
 
 					NodeIndex = 0;
 					for (TSharedPtr<FJsonValue> Node : *FunctionNodeArray)
@@ -1042,6 +1040,8 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 									EVariableTypes VariableType = InputPin.VariableType;
 									bool Array = InputPin.Array;
 
+									InputPin.Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
+
 									// Syntax check for input pins
 									FIntPoint ReferencedPinInfo = FindPinsConnectedToPin(InputPin);
 									if (ReferencedPinInfo.X > -1 && ReferencedPinInfo.Y > -1)
@@ -1062,11 +1062,19 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 											Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 1));
 										}
 									}
-
-
-									InputPin.Value = JsonValueToScriptValue(*ValueArray, VariableType, Array, Success);
 								}
 								InputIndex++;
+							}
+
+							// If for whatever reason there are more pins than saved values, for example when a node changes its default inputs
+							for (int i = InputIndex; i < FunctionNodes[NodeIndex].InputPins.Num(); i++)
+							{
+								FPinStruct& Pin = FunctionNodes[NodeIndex].InputPins[i];
+								if (!Pin.Array)
+								{
+									Pin.Value.Array.SetNum(1);
+									Pin.Value.Array[0] = FNodeVarArgs(Pin.VariableType);
+								}
 							}
 
 							// Syntax check for output pins
@@ -1093,19 +1101,7 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 										Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 0));
 									}
 								}
-		
 								InputIndex++;
-							}
-
-							// If for whatever reason there are more pins than saved values, for example when a node changes its default inputs
-							for (int i = InputIndex; i < FunctionNodes[NodeIndex].InputPins.Num(); i++)
-							{
-								FPinStruct& InputPin = FunctionNodes[NodeIndex].InputPins[i];
-								if (!InputPin.Array)
-								{
-									InputPin.Value.Array.SetNum(1);
-									InputPin.Value.Array[0] = FNodeVarArgs(InputPin.VariableType);
-								}
 							}
 						}
 						NodeIndex++;
