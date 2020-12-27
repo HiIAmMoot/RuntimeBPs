@@ -45,7 +45,7 @@ public:
 	void ClearNodeStructArray();
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Add Node Struct to Array"))
-	void AddNodeStructToArray(FVector2D NodeCoords, TArray<FPinStruct> InputPins, TArray<FPinStruct> OutputPins, int NodeIndex, TSubclassOf<URuntimeBpObject> NodeClass);
+	void AddNodeStructToArray(FVector2D NodeCoords, const TArray<FPinStruct>& InputPins, const TArray<FPinStruct>& OutputPins, int NodeIndex, TSubclassOf<URuntimeBpObject> NodeClass, EVariableTypes WildCardType = EVariableTypes::WildCard);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Values|Editor", Keywords = "Add Variable Added Duplicate"))
 	int AddVariable();

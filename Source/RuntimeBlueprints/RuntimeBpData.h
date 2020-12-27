@@ -724,6 +724,9 @@ struct FNodeStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<URuntimeBpObject> NodeClass;
 
+	// The wildcard type of this node
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EVariableTypes WildCardType = EVariableTypes::WildCard;
 };
 
 
@@ -1220,6 +1223,10 @@ struct FSaveableNode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "Node Class"))
 	class TSubclassOf<URuntimeBpObject> n;
 
+	// Wildcard Meta
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (DisplayName = "Meta"))
+	EVariableTypes w = EVariableTypes::WildCard;
+
 	FSaveableNode()
 	{}
 
@@ -1230,7 +1237,6 @@ struct FSaveableNode
 
 	void FromScript(const FNodeStruct& Node)
 	{
-		c = Node.NodeCoords;
 
 		i.Reserve(Node.InputPins.Num());
 		for (FPinStruct Input : Node.InputPins)
@@ -1244,8 +1250,10 @@ struct FSaveableNode
 			o.Add(FSaveableOutputPin(Output));
 		}
 
+		c = Node.NodeCoords;
 		ix = Node.NodeIndex;
 		n = Node.NodeClass;
+		w = Node.WildCardType;
 	}
 
 	void ToScript(FNodeStruct& Node)
@@ -1254,6 +1262,7 @@ struct FSaveableNode
 		Node.NodeCoords = c;
 		Node.NodeIndex = ix;
 		Node.NodeClass = n;
+		Node.WildCardType = w;
 
 		// Loop and update the pins with the data that was saved
 		int Index = 0;
