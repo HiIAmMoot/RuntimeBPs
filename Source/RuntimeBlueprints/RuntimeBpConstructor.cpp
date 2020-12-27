@@ -112,11 +112,12 @@ bool FMultiThreadScript::IsThreadFinished()
 void URuntimeBpConstructor::InitScript(const FString& ScriptName, UPARAM(ref) FRuntimeBpJsonFormat& Script, bool Multithread)
 {
 	// Script won't be run if there are errors.
-	if (Script.ErroringNodes.Num() > 0)
+	// Will be uncommented once syntax errors are implemented correctly and fixable
+	/*if (Script.ErroringNodes.Num() > 0)
 	{
 		this->DestroyComponent();
 		return;
-	}
+	}*/
 
 	JsonFile = ScriptName;
 	NodeStructs = Script.Nodes;

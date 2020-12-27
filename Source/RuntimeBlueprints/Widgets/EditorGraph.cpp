@@ -8,7 +8,7 @@ void UEditorGraph::ClearNodeStructArray()
 	Nodes.Empty();
 }
 
-void UEditorGraph::AddNodeStructToArray(FVector2D NodeCoords, TArray<FPinStruct> InputPins, TArray<FPinStruct> OutputPins, int NodeIndex, TSubclassOf<URuntimeBpObject> NodeClass)
+void UEditorGraph::AddNodeStructToArray(FVector2D NodeCoords, const TArray<FPinStruct>& InputPins, const TArray<FPinStruct>& OutputPins, int NodeIndex, TSubclassOf<URuntimeBpObject> NodeClass, EVariableTypes WildCardType)
 {
 	FNodeStruct NodeStruct;
 	NodeStruct.NodeCoords = NodeCoords;
@@ -16,6 +16,7 @@ void UEditorGraph::AddNodeStructToArray(FVector2D NodeCoords, TArray<FPinStruct>
 	NodeStruct.OutputPins = OutputPins;
 	NodeStruct.NodeIndex = NodeIndex;
 	NodeStruct.NodeClass = NodeClass;
+	NodeStruct.WildCardType = WildCardType;
 	Nodes.Add(NodeStruct);
 }
 
