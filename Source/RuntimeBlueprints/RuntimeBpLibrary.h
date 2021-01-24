@@ -378,7 +378,6 @@ public:
 	 *	@param	bAscendingOrder	If true, sort by ascending order.
 	 *	@param	VariableName	If a struct or object based array, the name of the variable to sort by.
 	 */
-
 	UFUNCTION(BlueprintCallable, CustomThunk, Meta = (Category = "Utilities|Array", DisplayName = "Sort", ArrayParm = "TargetArray", AdvancedDisplay = "bAscendingOrder,VariableName"))
 	static void Array_Sort(const TArray<int32>& TargetArray, bool bAscendingOrder = true, FName VariableName = NAME_None);
 

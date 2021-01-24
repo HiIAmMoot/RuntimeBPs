@@ -444,7 +444,8 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 
 				InputPin.PinName = DefaultObject->InputPins[UsedIndex].PinName;
 				InputPin.ConnectPinType = DefaultObject->InputPins[UsedIndex].ConnectPinType;
-				InputPin.Array = DefaultObject->InputPins[UsedIndex].Array;
+				//InputPin.VariableType = DefaultObject->InputPins[UsedIndex].VariableType;
+				//InputPin.Array = DefaultObject->InputPins[UsedIndex].Array;
 				InputPin.Meta = DefaultObject->InputPins[UsedIndex].Meta;
 				InputPin.Input = true;
 
@@ -458,11 +459,14 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 						if (UsedIndex > 0)
 						{
 							// Get the variable type from the variable, the index of the variable is stored in the output variable pin index
+							InputPin.Array = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].a;
 							InputPin.VariableType = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
 							InputPin.PinName = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						}
 						else
 						{
+							//InputPin.Array = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].a;
+							InputPin.Array = DefaultObject->InputPins[UsedIndex].Array;
 							InputPin.VariableType = DefaultObject->InputPins[UsedIndex].VariableType;
 						}
 						break;
@@ -473,17 +477,21 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 						if (UsedIndex > 0)
 						{
 							// Get the variable type from the variable, the index of the variable is stored in the output variable pin index
+							InputPin.Array = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].a;
 							InputPin.VariableType = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
 							InputPin.PinName = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						}
 						else
 						{
+							//InputPin.Array = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].a;
+							InputPin.Array = DefaultObject->InputPins[UsedIndex].Array;
 							InputPin.VariableType = DefaultObject->InputPins[UsedIndex].VariableType;
 						}
 						break;
 					}
 					default:
 					{
+						InputPin.Array = DefaultObject->InputPins[UsedIndex].Array;
 						// We use the wildcard meta to determine the wildcard type
 						if (DefaultObject->InputPins[UsedIndex].VariableType == EVariableTypes::WildCard)
 						{
@@ -531,13 +539,13 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 
 				OutputPin.PinName = DefaultObject->OutputPins[UsedIndex].PinName;
 				OutputPin.ConnectPinType = DefaultObject->OutputPins[UsedIndex].ConnectPinType;
-				OutputPin.Array = DefaultObject->OutputPins[UsedIndex].Array;
 				OutputPin.Meta = DefaultObject->OutputPins[UsedIndex].Meta;
 
 				switch (DefaultObject->NodeType)
 				{
 					case ENodeType::VariableGetter:
 					{
+						OutputPin.Array = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].a;
 						OutputPin.VariableType = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
 						OutputPin.PinName = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						break;
@@ -548,17 +556,20 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 						if (UsedIndex > 0)
 						{
 							// Get the variable type from the variable, the index of the variable is stored in the output variable pin index
+							OutputPin.Array = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].a;
 							OutputPin.VariableType = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
 							OutputPin.PinName = SaveableScript.Variables[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						}
 						else
 						{
+							OutputPin.Array = DefaultObject->OutputPins[UsedIndex].Array;
 							OutputPin.VariableType = DefaultObject->InputPins[UsedIndex].VariableType;
 						}
 						break;
 					}
 					case ENodeType::LocalVariableGetter:
 					{
+						OutputPin.Array = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].a;
 						OutputPin.VariableType = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
 						OutputPin.PinName = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						break;
@@ -569,17 +580,20 @@ void URuntimeBpJsonLibrary::UpdateRuntimeScriptNodeDefaults(FRuntimeBpJsonFormat
 						if (UsedIndex > 0)
 						{
 							// Get the variable type from the variable, the index of the variable is stored in the output variable pin index
+							OutputPin.Array = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].a;
 							OutputPin.VariableType = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].t;
 							OutputPin.PinName = SaveableScript.Functions[Index].v[SaveableNodes[NodeIndex].o[UsedIndex].p].n;
 						}
 						else
 						{
+							OutputPin.Array = DefaultObject->InputPins[UsedIndex].Array;
 							OutputPin.VariableType = DefaultObject->InputPins[UsedIndex].VariableType;
 						}
 						break;
 					}
 					default:
 					{
+						OutputPin.Array = DefaultObject->OutputPins[UsedIndex].Array;
 						if (DefaultObject->OutputPins[UsedIndex].VariableType == EVariableTypes::WildCard)
 						{
 							OutputPin.VariableType = SaveableNodes[NodeIndex].w;
@@ -1055,6 +1069,11 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 											const FPinStruct& ConnectedPin = FunctionNodes[ReferencedPinInfo.X].OutputPins[ReferencedPinInfo.Y];
 											if (VariableType != ConnectedPin.VariableType || Array != ConnectedPin.Array)
 											{
+												UE_LOG(LogJson, Warning, TEXT("--------------"));
+												UE_LOG(LogJson, Warning, TEXT("Bad connection - Variabletype: %i, %i - Array: %s, %s"), VariableType, ConnectedPin.VariableType, Array ? TEXT("True") : TEXT("False"), ConnectedPin.Array ? TEXT("True") : TEXT("False"));
+												UE_LOG(LogJson, Warning, TEXT("Bad connection - Functionindex: %i, NodeIndex: %i, PinIndex: %i, Input: false"), FunctionIndex, NodeIndex, InputIndex);
+												UE_LOG(LogJson, Warning, TEXT("Referenced pin info - NodeIndex %i, PinIndex %i"), ReferencedPinInfo.X, ReferencedPinInfo.Y);
+												
 												Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 1));
 												Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, ReferencedPinInfo.X, ReferencedPinInfo.Y, 0));
 											}
@@ -1096,7 +1115,10 @@ bool URuntimeBpJsonLibrary::JsonStringToScript(const FString& JsonString, FRunti
 										const FPinStruct& ConnectedPin = FunctionNodes[ReferencedPinInfo.X].InputPins[ReferencedPinInfo.Y];
 										if (VariableType != ConnectedPin.VariableType || Array != ConnectedPin.Array)
 										{
-											Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 0));
+											UE_LOG(LogJson, Warning, TEXT("--------------"));
+											UE_LOG(LogJson, Warning, TEXT("Bad connection - Variabletype: %i, %i - Array: %s, %s"), VariableType, ConnectedPin.VariableType, Array ? TEXT("True") : TEXT("False"), ConnectedPin.Array ? TEXT("True") : TEXT("False"));
+											UE_LOG(LogJson, Warning, TEXT("Bad connection - Functionindex: %i, NodeIndex: %i, PinIndex: %i, Input: false"), FunctionIndex, NodeIndex, InputIndex);
+											UE_LOG(LogJson, Warning, TEXT("Referenced pin info - NodeIndex %i, PinIndex %i"), ReferencedPinInfo.X, ReferencedPinInfo.Y);										Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, NodeIndex, InputIndex, 0));
 											Script.ErroringNodes.Add(FIntVector4D(FunctionIndex, ReferencedPinInfo.X, ReferencedPinInfo.Y, 1));
 										}
 									}
