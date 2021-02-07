@@ -7,10 +7,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/ActorComponent.h"
 
-#include "Private/Windows/WindowsRunnableThread.h"
+#include "Core/Private/Windows/WindowsRunnableThread.h"
 #include "HAL/ThreadSafeBool.h"
 #include "Containers/Queue.h"
-#include "Async.h"
+#include "Async/Async.h"
 
 #include "JsonSaveGame.h"
 #include "RuntimeBpData.h"

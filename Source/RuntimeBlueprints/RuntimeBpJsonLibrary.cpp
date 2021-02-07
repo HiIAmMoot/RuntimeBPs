@@ -10,7 +10,7 @@ bool URuntimeBpJsonLibrary::RuntimeBpDataFromJson(const FString& Json, FRuntimeB
 	return FJsonObjectConverter::JsonObjectStringToUStruct<FRuntimeBpJsonFormat>(Json, &RuntimeBpData, 0, 0);
 }
 
-FString URuntimeBpJsonLibrary::StructToJson(UProperty* AnyStruct, int Indent, bool PrettyPrint)
+FString URuntimeBpJsonLibrary::StructToJson(const int32& AnyStruct, int Indent, bool PrettyPrint)
 {
 	return FString{};
 }

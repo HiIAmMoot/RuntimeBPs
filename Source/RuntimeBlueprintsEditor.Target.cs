@@ -8,6 +8,7 @@ public class RuntimeBlueprintsEditorTarget : TargetRules
 	public RuntimeBlueprintsEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
+        DefaultBuildSettings = BuildSettingsVersion.V2;
 
         // For some reason, the LongUnion update does not happen after the first build since the change. You will have to cancel and build again to have the TypeAmount value updated.
         // This seems to be a bug with UHT, although unsure.
