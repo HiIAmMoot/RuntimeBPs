@@ -63,4 +63,5 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void ClientExplode();
 
+
 };

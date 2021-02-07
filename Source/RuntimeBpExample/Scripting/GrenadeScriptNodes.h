@@ -22,3 +22,15 @@ protected:
 	virtual void ConstructNode(URuntimeBpConstructor* ConstructorClass, int ConstructedNodeIndex, const FString& ConstructedNodeName, UPARAM(ref) TArray<FPinStruct>& ConstructedInputPins, UPARAM(ref) TArray<FPinStruct>& ConstructedOutputPins) override;
 
 };
+
+UCLASS()
+class RUNTIMEBPEXAMPLE_API UCastObjectToGrenade : public URuntimeBpObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UCastObjectToGrenade();
+
+	virtual void Execute(int Index, int FromLoopIndex = -1) override;
+};

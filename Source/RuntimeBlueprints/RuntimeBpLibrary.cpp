@@ -511,16 +511,6 @@ void URuntimeBpLibrary::SetParticleSystemArg(UPARAM(ref) TArray<FNodeVarArgs>& V
 	NODE_VAR_ARG_SETTER_SAFE(UParticleSystem*, ParticleSystem)
 }
 
-TArray<ARuntimeBpGrenade*> URuntimeBpLibrary::GetGrenadeArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)
-{
-	NODE_VAR_ARG_GETTER_SAFE(ARuntimeBpGrenade*, Grenade)
-}
-
-void URuntimeBpLibrary::SetGrenadeArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<ARuntimeBpGrenade*> Value)
-{
-	NODE_VAR_ARG_SETTER_SAFE(ARuntimeBpGrenade*, Grenade)
-}
-
 TArray<UDamageType*> URuntimeBpLibrary::GetDamageTypeArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array)
 {
 	NODE_VAR_ARG_GETTER_SAFE(UDamageType*, DamageType)

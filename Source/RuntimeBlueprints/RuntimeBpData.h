@@ -101,6 +101,7 @@ struct FNodeVarArgs
 	void Reset()
 	{
 		VariableData.Reset();
+		StringData = "";
 	}
 
 	FNodeVarArgs()
@@ -569,6 +570,11 @@ struct FNodeVarArgs
 		return false;
 	}
 
+	~FNodeVarArgs()
+	{
+		Reset();
+	}
+
 };
 
 // Array of FNodeVarArgs nested in a struct, this is used to store array variables
@@ -581,6 +587,11 @@ struct FNodeVarArgsArray
 	TArray<FNodeVarArgs> Array;
 
 	FNodeVarArgsArray()
+	{
+		Array.Empty();
+	}
+
+	~FNodeVarArgsArray()
 	{
 		Array.Empty();
 	}

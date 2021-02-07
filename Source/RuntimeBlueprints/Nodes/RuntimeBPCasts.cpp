@@ -5,8 +5,6 @@
 #include "Kismet/KismetStringLibrary.h"
 #include "RuntimeBpConstructor.h"
 
-#include "RuntimeBpGrenade.h"
-
 UCastObjectToActor::UCastObjectToActor()
 {
 	RUNTIME_BP_CAST_CONSTRUCTOR(UObject, Object, Actor)
@@ -76,14 +74,4 @@ UCastObjectToParticleSystemComponent::UCastObjectToParticleSystemComponent()
 void UCastObjectToParticleSystemComponent::Execute(int Index, int FromLoopIndex)
 {
 	RUNTIME_BP_CAST_EXECUTE(Object, UParticleSystemComponent, ParticleSystemComponent)
-}
-
-UCastObjectToGrenade::UCastObjectToGrenade()
-{
-	RUNTIME_BP_CAST_CONSTRUCTOR(UObject, Object, Grenade)
-}
-
-void UCastObjectToGrenade::Execute(int Index, int FromLoopIndex)
-{
-	RUNTIME_BP_CAST_EXECUTE(Object, ARuntimeBpGrenade, Grenade)
 }

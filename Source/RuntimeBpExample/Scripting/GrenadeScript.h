@@ -6,6 +6,8 @@
 #include "RuntimeBlueprints/RuntimeBpConstructor.h"
 #include "GrenadeScript.generated.h"
 
+//class URuntimeBpConstructor;
+//class URuntimeBpObject;
 class ARuntimeBpGrenade;
 
 /**
