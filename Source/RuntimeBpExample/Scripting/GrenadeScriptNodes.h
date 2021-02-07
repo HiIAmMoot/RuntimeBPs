@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RuntimeBpObject.h"
-#include "RuntimeBpLibrary.h"
+#include "RuntimeBlueprints/RuntimeBpObject.h"
+#include "RuntimeBlueprints/RuntimeBpLibrary.h"
 #include "GrenadeScript.h"
 #include "GrenadeScriptNodes.generated.h"
 
@@ -21,4 +21,16 @@ protected:
 	// Called when the constructor constructs the BP nodes
 	virtual void ConstructNode(URuntimeBpConstructor* ConstructorClass, int ConstructedNodeIndex, const FString& ConstructedNodeName, UPARAM(ref) TArray<FPinStruct>& ConstructedInputPins, UPARAM(ref) TArray<FPinStruct>& ConstructedOutputPins) override;
 
+};
+
+UCLASS()
+class RUNTIMEBPEXAMPLE_API UCastObjectToGrenade : public URuntimeBpObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UCastObjectToGrenade();
+
+	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 };

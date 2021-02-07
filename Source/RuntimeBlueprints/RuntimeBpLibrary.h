@@ -322,14 +322,6 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints|Set", Keywords = "Set Node Var Args Particle System"))
 	static void SetParticleSystemArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<UParticleSystem*> Value);
 
-	// Gets the variable in the form of an ARuntimeBpGrenade
-	UFUNCTION(BlueprintPure, meta = (Category = "Runtime Blueprints|Get", Keywords = "Get Node Var Args Grenade"))
-	static TArray<ARuntimeBpGrenade*> GetGrenadeArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array = false);
-
-	// Sets the variable in the form of an ARuntimeBpGrenade
-	UFUNCTION(BlueprintCallable, meta = (Category = "Runtime Blueprints|Set", Keywords = "Set Node Var Args Grenade"))
-	static void SetGrenadeArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, TArray<ARuntimeBpGrenade*> Value);
-
 	// Gets the variable in the form of an UDamageType
 	UFUNCTION(BlueprintPure, meta = (Category = "Runtime Blueprints|Get", Keywords = "Get Node Var Args DamageType Damage Type"))
 	static TArray<UDamageType*> GetDamageTypeArg(UPARAM(ref) TArray<FNodeVarArgs>& Values, bool Array = false);

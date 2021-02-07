@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RuntimeBpConstructor.h"
+#include "RuntimeBlueprints/RuntimeBpConstructor.h"
 #include "GrenadeScript.generated.h"
 
+//class URuntimeBpConstructor;
+//class URuntimeBpObject;
 class ARuntimeBpGrenade;
 
 /**

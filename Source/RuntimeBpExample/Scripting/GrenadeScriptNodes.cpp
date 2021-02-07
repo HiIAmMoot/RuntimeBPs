@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GrenadeScriptNodes.h"
+#include "RuntimeBlueprints/RuntimeBpMacros.h"
+#include "RuntimeBlueprints/RuntimeBpConstructor.h"
+#include "Kismet/KismetStringLibrary.h"
 
 /**
 * Called when an explosion starts
@@ -27,4 +30,14 @@ void UGrenadeExplode::ConstructNode(URuntimeBpConstructor* ConstructorClass, int
 	}
 
 	Super::ConstructNode(ConstructorClass, ConstructedNodeIndex, ConstructedNodeName, ConstructedInputPins, ConstructedOutputPins);
+}
+
+UCastObjectToGrenade::UCastObjectToGrenade()
+{
+	RUNTIME_BP_CAST_CONSTRUCTOR(UObject, Object, Grenade)
+}
+
+void UCastObjectToGrenade::Execute(int Index, int FromLoopIndex)
+{
+	RUNTIME_BP_CAST_EXECUTE(Object, ARuntimeBpGrenade, Grenade)
 }

@@ -11,8 +11,7 @@
 			"AdditionalDependencies": [
 				"UMG",
 				"CoreUObject",
-				"Engine",
-				"RuntimeBpExample"
+				"Engine"
 			]
 		},
 		{

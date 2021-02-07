@@ -92,15 +92,3 @@ public:
 
 	virtual void Execute(int Index, int FromLoopIndex = -1) override;
 };
-
-UCLASS()
-class RUNTIMEBLUEPRINTS_API UCastObjectToGrenade : public URuntimeBpObject
-{
-	GENERATED_BODY()
-
-public:
-
-	UCastObjectToGrenade();
-
-	virtual void Execute(int Index, int FromLoopIndex = -1) override;
-};
