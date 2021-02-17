@@ -24,7 +24,7 @@ void UActorHasScript::Execute(int Index, int FromLoopIndex)
 
 	if (Actor)
 	{
-		OutputPins[1].Value.Array[0].SetBoolArg(Actor->GetComponentByClass(URuntimeBpConstructor::StaticClass()));
+		OutputPins[1].Value.Array[0].SetBoolArg(IsValid(Actor->GetComponentByClass(URuntimeBpConstructor::StaticClass())));
 	}
 	else
 	{
