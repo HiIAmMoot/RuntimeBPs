@@ -21,15 +21,10 @@ UActorHasScript::UActorHasScript()
 void UActorHasScript::Execute(int Index, int FromLoopIndex)
 {
 	AActor* Actor = GetConnectedPinValue(InputPins[1]).GetActorArg();
+	
+	bool res = IsValid(Actor) && IsValid(Actor->GetComponentByClass(URuntimeBpConstructor::StaticClass()));
+	OutputPins[1].Value.Array[0].SetBoolArg(res);
 
-	if (Actor)
-	{
-		OutputPins[1].Value.Array[0].SetBoolArg(IsValid(Actor->GetComponentByClass(URuntimeBpConstructor::StaticClass())));
-	}
-	else
-	{
-		OutputPins[1].Value.Array[0].SetBoolArg(false);
-	}
 	Super::Execute(0, FromLoopIndex);// 0 here is the output pins array index
 }
 
