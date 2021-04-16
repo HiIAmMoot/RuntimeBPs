@@ -81,7 +81,7 @@ A: Probably because I didn't know about X or Y, if you have improvements to be m
 
 **Q: How can I contact you for questions and whatnot?**
 
-A: I'm active in the Unreal Slackers Discord server (https://unrealslackers.org/). My tag is Moot#0021. Alternatively, you can ask questions on the UE4 forums. https://forums.unrealengine.com/community/community-content-tools-and-tutorials/1751725-runtime-blueprints-have-your-end-user-write-their-own-blueprint-scripts-to-use-in-your-game
+A: I'm active in the Unreal Slackers Discord server (https://unrealslackers.org/). My tag is Moot#0021. Alternatively, you can ask questions on the UE4 forums. https://forums.unrealengine.com/t/runtime-blueprints-have-your-end-user-write-their-own-blueprint-scripts-to-use-in-your-game/142353
 
 **Q: Is replicating blueprint functionality legal?**
 
@@ -94,6 +94,6 @@ A: That's Contingency, a fan-made Halo game in UE4. I used to work with them so 
 ## Used resources
 Multithreading: https://michaeljcole.github.io/wiki.unrealengine.com/Multi-Threading:_How_to_Create_Threads_in_UE4/
 
-Wildcard structs: https://forums.unrealengine.com/community/community-content-tools-and-tutorials/27351-tutorial-how-to-accept-wildcard-structs-in-your-ufunctions
+Wildcard structs: https://forums.unrealengine.com/t/tutorial-how-to-accept-wildcard-structs-in-your-ufunctions/18968
 
 Barlow font: https://fonts.google.com/specimen/Barlow
